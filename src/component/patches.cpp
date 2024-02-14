@@ -33,21 +33,6 @@ namespace patches
 
 			return CreateWindowExA(ex_style, class_name, window_name, style, x, y, width, height, parent, menu, inst, param);
 		}
-
-		utils::hook::detour register_variant_hook;
-		void* register_variant_stub(const char* name, int type, int flags, game::qos::DvarValue value, game::qos::DvarLimits domain, const char* desc)
-		{
-			const auto new_name = utils::string::to_lower(name);
-
-			if (new_name == "cg_drawfps"s || new_name == "cg_drawfpslabels")
-			{
-				value.enabled = 1;
-				value.integer = 1;
-				console::debug("setting %s to true\n", name);
-			}
-
-			return register_variant_hook.invoke<void*>(name, type, flags, value, domain, desc);
-		}
 	}
 
 	class component final : public component_interface
@@ -55,9 +40,6 @@ namespace patches
 	public:
 		void post_load() override
 		{
-			// TODO: hook Dvar_RegisterVariant
-			//register_variant_hook.create(game::game_offset(0x102783C0), register_variant_stub);
-
 #ifdef FORCE_BORDERLESS
 			// force fullscreen to always be false
 			utils::hook::nop(game::game_offset(0x103BE1A2), 2);

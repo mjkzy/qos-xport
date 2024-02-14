@@ -67,4 +67,5 @@ function iw4_open_formats.project()
 		iw4_open_formats.projects()
 end
 
-table.insert(dependencies, iw4_open_formats)
+-- TODO: re-enable later
+--table.insert(dependencies, iw4_open_formats)

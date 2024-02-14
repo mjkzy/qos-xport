@@ -432,40 +432,9 @@ namespace console
 			printf_hook.create(printf, printf_stub);
 			com_printf_hook.create(game::game_offset(0x103F6400), com_printf_stub);
 
-			// utils::hook::call(0x530EA6, pm_clip_velocity_stub);
-
-			// change some warning/errors to be easier to see
-			/*
-			utils::hook::call(0x476C80, com_printf_error);
-			utils::hook::call(0x476CB8, com_printf_error);
-			utils::hook::call(0x476CDF, com_printf_error);
-			utils::hook::call(0x476CFA, com_printf_error);
-
-			utils::hook::call(0x47F1F0, print_prev_code_pos_errors);
-			utils::hook::call(0x47F231, print_prev_code_pos_warnings);
-			*/
-
-			// compiler_error_2_hook.create(0x476B00, compiler_error_2_stub);
-
-			/*
-			// CompilerError
-			utils::hook::set<const char*>(0x476B68 + 1, "^1******* script compile error *******\n");
-			utils::hook::set<const char*>(0x476B97 + 1, "^1%s: ");
-			utils::hook::set<const char*>(0x476B83 + 1, "^1%s\n");
-			utils::hook::set<const char*>(0x476BBF + 1, "^1************************************\n\n");
-
-			// CompilerError2
-			utils::hook::set<const char*>(0x476C00 + 1, "^1******* script compile error *******\n");
-			utils::hook::set<const char*>(0x476C2E + 1, "^1%s: ");
-			utils::hook::set<const char*>(0x476C48 + 1, "^1************************************\n\n");
-			*/
-
-			// VM_Execute
-			// utils::hook::set<const char*>(0x47F21F, "^1script runtime error: potential infinite loop in script - killing thread.\n");
-
 			// setup external console
 			ShowWindow(GetConsoleWindow(), SW_SHOW);
-			SetConsoleTitle("t3-mod");
+			SetConsoleTitle("qos-exp");
 
 			con.kill_event = CreateEvent(NULL, TRUE, FALSE, NULL);
 

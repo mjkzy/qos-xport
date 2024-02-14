@@ -11,6 +11,7 @@
 
 namespace scheduler
 {
+	/*
 	namespace
 	{
 		struct task
@@ -203,6 +204,7 @@ namespace scheduler
 			}
 		}
 	};
+	*/
 }
 
 //REGISTER_COMPONENT(scheduler::component)
