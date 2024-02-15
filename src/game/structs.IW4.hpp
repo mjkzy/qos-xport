@@ -3,7 +3,6 @@
 #include <std_include.hpp>
 #include "structs.hpp"
 
-#ifdef __cplusplus
 namespace game::iw4
 {
 	typedef float vec_t;
@@ -1312,7 +1311,7 @@ namespace game::iw4
 		char sortKey;
 		char textureAtlasRowCount;
 		char textureAtlasColumnCount;
-		IW4::GfxDrawSurf drawSurf;
+		GfxDrawSurf drawSurf;
 		int surfaceTypeBits;
 		unsigned __int16 hashIndex;
 		unsigned __int16 pad;
@@ -1494,6 +1493,8 @@ namespace game::iw4
 
 	union SoundAliasFlags
 	{
+#pragma warning(push)
+#pragma warning(disable: 4201)
 		struct
 		{
 			unsigned int looping : 1;
@@ -1506,6 +1507,7 @@ namespace game::iw4
 			unsigned int type : 2;
 			unsigned int channel : 6;
 		};
+#pragma warning(pop)
 		unsigned int intValue;
 	};
 
@@ -2254,4 +2256,3 @@ namespace game::iw4
 		//AddonMapEnts* addonMapEnts;
 	};
 }
-#endif
