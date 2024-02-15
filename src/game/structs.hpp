@@ -85,10 +85,10 @@ namespace game::qos
 
 	struct RawFile
 	{
-		const char* name;
-		unsigned int len;
-		char* buffer;
-	};
+		const char* name; // 0
+		unsigned int len; // 4
+		char* buffer; // 8
+	}; static_assert(sizeof(RawFile) == 12);
 
 	union XAssetHeader
 	{

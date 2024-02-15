@@ -69,7 +69,7 @@ namespace map_dumper
 						}
 						*/
 
-						auto header = *(game::DB_FindXAssetHeader(qos_type, name_to_find.data()));
+						auto header = game::DB_FindXAssetHeader(qos_type, name_to_find.data());
 						if (header.data && !game::DB_IsXAssetDefault(qos_type, name_to_find.data()))
 						{
 							return assethandler::convert_asset_header(qos_type, header).data;
