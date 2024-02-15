@@ -109,7 +109,17 @@ namespace game::qos
 	struct XAssetEntry
 	{
 		XAsset asset;
-		// there's more behind this, but idc about that rn
+		char zoneIndex;
+		char inuse;
+		unsigned __int16 nextHash;
+		unsigned __int16 nextOverride;
+		unsigned __int16 usageFrame;
+	};
+
+	union XAssetEntryPoolEntry
+	{
+		XAssetEntry entry;
+		XAssetEntryPoolEntry* next;
 	};
 
 	struct CmdArgs
@@ -128,5 +138,10 @@ namespace game::qos
 		const char* autoCompleteDir;
 		const char* autoCompleteExt;
 		void(__cdecl* function)();
+	};
+
+	struct scrMemTreePub_t
+	{
+		char* mt_buffer;
 	};
 }

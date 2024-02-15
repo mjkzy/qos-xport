@@ -2,6 +2,8 @@
 
 #include "loader/component_loader.hpp"
 
+#include "component/map_dumper.hpp"
+
 #include "game/game.hpp"
 #include "game/structs.IW4.hpp"
 
@@ -103,7 +105,7 @@ namespace assethandler
 		const auto converted = convert_asset_header(type, asset);
 		if (converted.data)
 		{
-			//MapDumper::GetApi()->write(TypeTable[type], converted.data);
+			map_dumper::api->write(type_conversion_table[type], converted.data);
 		}
 	}
 

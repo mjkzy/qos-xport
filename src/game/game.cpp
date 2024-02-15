@@ -66,4 +66,18 @@ namespace game
 			console::debug("registered cmd '%s'\n", name);
 		}
 	}
+
+	bool DB_IsXAssetDefault(qos::XAssetType type, const char* name)
+	{
+		int func_loc = game_offset(0x103DFC00);
+
+		int type_ = static_cast<int>(type);
+
+		__asm
+		{
+			push ebx
+			mov edi, type_
+			call func_loc
+		}
+	}
 }

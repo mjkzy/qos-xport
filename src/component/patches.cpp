@@ -71,6 +71,9 @@ namespace patches
 			// hook linkxassetentry to debug stuff
 			link_xasset_entry_hook.create(game::game_offset(0x103E0640), link_xasset_entry_stub);
 #endif
+
+			// stop disconnect error when starting match
+			utils::hook::nop(game::game_offset(0x102489A1), 5);
 		}
 	};
 }
