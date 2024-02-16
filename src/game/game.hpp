@@ -39,6 +39,7 @@ namespace game
 	void Cbuf_AddText(int controller, const char* text);
 	void Cmd_AddCommandInternal(const char* name, void(__cdecl* function)(), qos::cmd_function_s* cmd);
 	bool DB_IsXAssetDefault(qos::XAssetType type, const char* name);
+	void DB_EnumXAssetEntries(qos::XAssetType type, std::function<void(qos::XAssetEntryPoolEntry*)> callback, bool overrides);
 }
 
 #include "symbols.hpp"

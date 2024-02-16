@@ -13,4 +13,7 @@ namespace game
 	WEAK symbol<char**> cmd_argv{ game_offset(0x10752CD4) };
 	WEAK symbol<qos::cmd_function_s*> cmd_functions{ game_offset(0x10752CF8) };
 	WEAK symbol<qos::scrMemTreePub_t> scrMemTreePub{ game_offset(0x116357CC) };
+
+	WEAK symbol<unsigned short*> db_hashTable{ game_offset(0x1082ED60) };
+	WEAK symbol<qos::XAssetEntryPoolEntry> g_assetEntryPool{ game_offset(0x108CB5C0) };
 }

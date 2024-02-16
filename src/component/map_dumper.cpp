@@ -118,9 +118,13 @@ namespace map_dumper
 			console::info("exporting GameWorld...\n");
 			command::execute(utils::string::va("dumpgameworld %s", bsp_name.data()));
 
+			// This is redundant with clipmap but allows exporting more models
+			console::info("Exporting Entities...\n");
+			command::execute(utils::string::va("dumpMapEnts %s", bsp_name.data()));
+
 			// TODO
-			console::info("exporting GfxWorld...\n");
-			command::execute(utils::string::va("dumpgfxworld %s", bsp_name.data()));
+			/*console::info("exporting GfxWorld...\n");
+			command::execute(utils::string::va("dumpgfxworld %s", bsp_name.data()));*/
 		}
 	}
 

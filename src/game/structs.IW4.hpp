@@ -161,10 +161,10 @@ namespace game::iw4
 		unsigned char semantic;
 		unsigned char category;
 		bool useSrgbReads;
-		// TODO //qos::Picmip picmip;
+		qos::Picmip picmip;
 		bool noPicmip;
 		char track;
-		// TODO //qos::CardMemory cardMemory;
+		qos::CardMemory cardMemory;
 		unsigned short width;
 		unsigned short height;
 		unsigned short depth;
@@ -728,7 +728,7 @@ namespace game::iw4
 
 	struct cbrushside_t
 	{
-		// TODO //qos::cplane_s* plane;
+		qos::cplane_s* plane;
 		unsigned __int16 materialNum;
 		char firstAdjacentSideOffset;
 		char edgeCount;
@@ -751,7 +751,7 @@ namespace game::iw4
 		Bounds bounds;
 		cbrush_t brush;
 		int totalEdgeCount;
-		// TODO //qos::cplane_s* planes;
+		qos::cplane_s* planes;
 	};
 #pragma pack(pop)
 
@@ -769,7 +769,7 @@ namespace game::iw4
 		const char* name;
 		unsigned int count;
 		PhysGeomInfo* geoms;
-		// TODO //qos::PhysMass mass;
+		qos::PhysMass mass;
 		Bounds bounds;
 	};
 
@@ -814,7 +814,7 @@ namespace game::iw4
 
 	struct XModelCollSurf_s
 	{
-		// TODO //qos::XModelCollTri_s* collTris;
+		qos::XModelCollTri_s* collTris;
 		int numCollTris;
 		Bounds bounds;
 		int boneIdx;
@@ -836,7 +836,7 @@ namespace game::iw4
 		__int16* quats;
 		float* trans;
 		unsigned char* partClassification;
-		// TODO //qos::DObjAnimMat* baseMat;
+		qos::DObjAnimMat* baseMat;
 		Material** materialHandles;
 		XModelLodInfo lodInfo[4];
 		char maxLoadedLod;
@@ -851,7 +851,7 @@ namespace game::iw4
 		Bounds bounds;
 		int memUsage;
 		bool bad;
-		// TODO //qos::PhysPreset* physPreset;
+		qos::PhysPreset* physPreset;
 		PhysCollmap* physCollmap;
 	};
 
@@ -1323,8 +1323,8 @@ namespace game::iw4
 		char cameraRegion;
 		MaterialTechniqueSet* techniqueSet;
 		MaterialTextureDef* textureTable;
-		// TODO //qos::MaterialConstantDef* constantTable;
-		// TODO //qos::GfxStateBits* stateBitTable;
+		game::qos::MaterialConstantDef* constantTable;
+		game::qos::GfxStateBits* stateBitTable;
 	};
 #pragma pack(pop)
 
