@@ -3,7 +3,6 @@
 #include <std_include.hpp>
 #include "structs.hpp"
 
-#ifdef __cplusplus
 namespace game::iw4
 {
 	typedef float vec_t;
@@ -1312,7 +1311,7 @@ namespace game::iw4
 		char sortKey;
 		char textureAtlasRowCount;
 		char textureAtlasColumnCount;
-		IW4::GfxDrawSurf drawSurf;
+		GfxDrawSurf drawSurf;
 		int surfaceTypeBits;
 		unsigned __int16 hashIndex;
 		unsigned __int16 pad;
@@ -1494,6 +1493,8 @@ namespace game::iw4
 
 	union SoundAliasFlags
 	{
+#pragma warning(push)
+#pragma warning(disable: 4201)
 		struct
 		{
 			unsigned int looping : 1;
@@ -1506,6 +1507,7 @@ namespace game::iw4
 			unsigned int type : 2;
 			unsigned int channel : 6;
 		};
+#pragma warning(pop)
 		unsigned int intValue;
 	};
 
@@ -2211,6 +2213,31 @@ namespace game::iw4
         bool dpadIconShowsAmmo;
     };
 
+	struct ComPrimaryLight
+	{
+		char type;
+		char canUseShadowMap;
+		char exponent;
+		char unused;
+		float color[3];
+		float dir[3];
+		float origin[3];
+		float radius;
+		float cosHalfFovOuter;
+		float cosHalfFovInner;
+		float cosHalfFovExpanded;
+		float rotationLimit;
+		float translationLimit;
+		const char* defName;
+	};
+
+	struct ComWorld
+	{
+		const char* name; // 0
+		int isInUse; // 4
+		unsigned int primaryLightCount; // 8
+		ComPrimaryLight* primaryLights; // 12
+	}; static_assert(sizeof(ComWorld) == 16);
 
 	union XAssetHeader
 	{
@@ -2230,7 +2257,7 @@ namespace game::iw4
 		// TODO //qos::SndCurve* sndCurve;
 		// TODO //qos::LoadedSound* loadSnd;
 		clipMap_t* clipMap;
-		// TODO //qos::ComWorld* comWorld;
+		ComWorld* comWorld;
 		//gameWorldSp* gameWorldSp;
 		gameWorldMp* gameWorldMp;
 		MapEnts* mapEnts;
@@ -2254,4 +2281,3 @@ namespace game::iw4
 		//AddonMapEnts* addonMapEnts;
 	};
 }
-#endif

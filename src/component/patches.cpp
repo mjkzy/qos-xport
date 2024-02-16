@@ -34,6 +34,16 @@ namespace patches
 			return CreateWindowExA(ex_style, class_name, window_name, style, x, y, width, height, parent, menu, inst, param);
 		}
 
+		utils::hook::detour link_xasset_entry_hook;
+		game::qos::XAssetEntry* link_xasset_entry_stub(game::qos::XAssetEntry* entry, int override)
+		{
+			if (entry->asset.type == game::qos::ASSET_TYPE_PHYSPRESET)
+			{
+				const auto troll = entry->asset.header.physPreset;
+				printf("");
+			}
+
+			return link_xasset_entry_hook.invoke<game::qos::XAssetEntry*>(entry, override);
 		int PlayListBypass(DWORD* unk, int a2)
 		{
 			return 1;
@@ -60,6 +70,12 @@ namespace patches
 			// un-cap fps
 			utils::hook::set<uint8_t>(game::game_offset(0x103F696A), 0x00);
 
+#ifdef DEBUG
+			// hook linkxassetentry to debug stuff
+			//link_xasset_entry_hook.create(game::game_offset(0x103E0640), link_xasset_entry_stub);
+#endif
+
+			// stop disconnect error when starting match
 			// Bypass playlist + stats
 			utils::hook::jump(game::game_offset(0x10240B30), PlayListBypass);
 			utils::hook::jump(game::game_offset(0x10240A30), PlayListBypass);
