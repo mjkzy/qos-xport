@@ -117,6 +117,10 @@ namespace map_dumper
 
 			console::info("exporting GameWorld...\n");
 			command::execute(utils::string::va("dumpgameworld %s", bsp_name.data()));
+
+			// TODO
+			console::info("exporting GfxWorld...\n");
+			command::execute(utils::string::va("dumpgfxworld %s", bsp_name.data()));
 		}
 	}
 

@@ -123,6 +123,34 @@ namespace game::qos
 		//void* g_glassData; // 4
 	}; static_assert(sizeof(gameWorldMp) == 4);
 
+	struct GfxImage
+	{
+		// TODO
+	};
+
+	// slightly different than IW3
+	struct GfxWorld
+	{
+		const char* name;			// 0
+		const char* baseName;		// 4
+		int planeCount;				// 8
+		void* planes;				// 12 (pointer is next to count now)
+		int nodeCount;				// 16
+		void* nodes;				// 20 ^
+		int indexCount;				// 24
+		unsigned __int16* indices;	// 28 ^
+		int surfaceCount;			// 32
+		void* surfaces;				// 36 ^
+		char __pad0[20];			// 40 (unresearched)
+		int skySurfCount;			// 60
+		int* skyStartSurfs;			// 64
+		GfxImage* skyImage;			// 68
+		char __pad0[4];				// 72 (unresearched)
+		const char* unk;			// 76 (varXString used)
+
+		// TODO
+	}; static_assert(sizeof(GfxWorld) == 728); // 732 -> 728 (4 byte difference from COD4..)
+
 	union XAssetHeader
 	{
 		void* data;
@@ -130,10 +158,11 @@ namespace game::qos
 		PhysPreset* physPreset; // not done
 		//void* physConstraints;
 		//void* destructibleDef;
-
 		ComWorld* comWorld;
 		//gameWorldSp* gameWorldSp;
 		gameWorldMp* gameWorldMp;
+
+		GfxWorld* gfxWorld;
 
 		RawFile* rawfile;
 	};
