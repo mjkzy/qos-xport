@@ -3,7 +3,10 @@
 #include "component/console.hpp"
 
 #include "game.hpp"
+#include "structs.hpp"
 #include <utils/hook.hpp>
+#include "Structs.IW4.hpp"
+
 
 namespace game
 {
@@ -83,5 +86,71 @@ namespace game
 		}
 
 		return answer;
+	}
+
+	void DB_EnumXAssetEntries(qos::XAssetType type, std::function<void(qos::XAssetEntryPoolEntry*)> callback, bool overrides)
+	{
+		volatile long* lock = reinterpret_cast<volatile long*>(game::game_offset(0x1056250A));
+		InterlockedIncrement(lock);
+
+		while (*reinterpret_cast<volatile long*>(0x105624F8)) std::this_thread::sleep_for(1ms);
+
+		unsigned int index = 0;
+		do
+		{
+			unsigned short hashIndex = *game::db_hashTable[index];
+			if (hashIndex)
+			{
+				do
+				{
+					qos::XAssetEntryPoolEntry* asset = &g_assetEntryPool[hashIndex];
+					hashIndex = asset->entry.nextHash;
+					if (asset->entry.asset.type == type)
+					{
+						callback(asset);
+						if (overrides)
+						{
+							unsigned short overrideIndex = asset->entry.nextOverride;
+							if (asset->entry.nextOverride)
+							{
+								do
+								{
+									asset = &g_assetEntryPool[overrideIndex];
+									callback(asset);
+									overrideIndex = asset->entry.nextOverride;
+								} while (overrideIndex);
+							}
+						}
+					}
+				} while (hashIndex);
+			}
+			++index;
+		} while (index < 0x9C40);
+		InterlockedDecrement(lock);
+	}
+
+
+	void ConvertBounds(game::iw4::Bounds* bounds, game::qos::vec3_t mins, game::qos::vec3_t maxs)
+	{
+		for (int i = 0; i < 3; ++i)
+		{
+			bounds->halfSize[i] = (maxs[i] - mins[i]) / 2;
+			bounds->midPoint[i] = bounds->halfSize[i] + mins[i];
+		}
+	}
+
+	namespace iw4
+	{
+		void VectorSubtract(const vec3_t& a, const vec3_t& b, vec3_t& out)
+		{
+			out[0] = a[0] - b[0];
+			out[1] = a[1] - b[1];
+			out[2] = a[2] - b[2];
+		}
+
+		void Bounds::compute(vec3_t mins, vec3_t maxs)
+		{
+			ConvertBounds(this, mins, maxs);
+		}
 	}
 }
