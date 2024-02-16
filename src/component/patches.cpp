@@ -11,6 +11,7 @@
 #include <utils/string.hpp>
 
 #define FORCE_BORDERLESS
+#define XLIVELESS
 
 namespace patches
 {
@@ -44,6 +45,8 @@ namespace patches
 			}
 
 			return link_xasset_entry_hook.invoke<game::qos::XAssetEntry*>(entry, override);
+		}
+
 		int PlayListBypass(DWORD* unk, int a2)
 		{
 			return 1;
@@ -75,6 +78,7 @@ namespace patches
 			//link_xasset_entry_hook.create(game::game_offset(0x103E0640), link_xasset_entry_stub);
 #endif
 
+#ifdef XLIVELESS
 			// stop disconnect error when starting match
 			// Bypass playlist + stats
 			utils::hook::jump(game::game_offset(0x10240B30), PlayListBypass);
@@ -82,6 +86,7 @@ namespace patches
 
 			// Allow map Loading
 			utils::hook::nop(game::game_offset(0x102489A1), 5);
+#endif
 		}
 	};
 }
