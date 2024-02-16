@@ -10,7 +10,7 @@
 #include <utils/hook.hpp>
 #include <utils/string.hpp>
 
-#define FORCE_BORDERLESS true
+#define FORCE_BORDERLESS
 
 namespace patches
 {
@@ -33,6 +33,11 @@ namespace patches
 
 			return CreateWindowExA(ex_style, class_name, window_name, style, x, y, width, height, parent, menu, inst, param);
 		}
+
+		int PlayListBypass(DWORD* unk, int a2)
+		{
+			return 1;
+		}
 	}
 
 	class component final : public component_interface
@@ -54,6 +59,13 @@ namespace patches
 
 			// un-cap fps
 			utils::hook::set<uint8_t>(game::game_offset(0x103F696A), 0x00);
+
+			// Bypass playlist + stats
+			utils::hook::jump(game::game_offset(0x10240B30), PlayListBypass);
+			utils::hook::jump(game::game_offset(0x10240A30), PlayListBypass);
+
+			// Allow map Loading
+			utils::hook::nop(game::game_offset(0x102489A1), 5);
 		}
 	};
 }
