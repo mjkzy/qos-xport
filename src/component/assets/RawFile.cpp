@@ -56,7 +56,7 @@ namespace rawfile
 					auto converted = rawfile::convert(header.rawfile);
 					map_dumper::api->write(game::iw4::ASSET_TYPE_RAWFILE, converted);
 
-					console::info("dumped rawfile '%s' for IW4\n", name);
+					console::info("dumped '%s' for IW4\n", name);
 				});
 			}, scheduler::main);
 		}

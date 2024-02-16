@@ -2213,6 +2213,31 @@ namespace game::iw4
         bool dpadIconShowsAmmo;
     };
 
+	struct ComPrimaryLight
+	{
+		char type;
+		char canUseShadowMap;
+		char exponent;
+		char unused;
+		float color[3];
+		float dir[3];
+		float origin[3];
+		float radius;
+		float cosHalfFovOuter;
+		float cosHalfFovInner;
+		float cosHalfFovExpanded;
+		float rotationLimit;
+		float translationLimit;
+		const char* defName;
+	};
+
+	struct ComWorld
+	{
+		const char* name; // 0
+		int isInUse; // 4
+		unsigned int primaryLightCount; // 8
+		ComPrimaryLight* primaryLights; // 12
+	}; static_assert(sizeof(ComWorld) == 16);
 
 	union XAssetHeader
 	{
@@ -2232,7 +2257,7 @@ namespace game::iw4
 		// TODO //qos::SndCurve* sndCurve;
 		// TODO //qos::LoadedSound* loadSnd;
 		clipMap_t* clipMap;
-		// TODO //qos::ComWorld* comWorld;
+		ComWorld* comWorld;
 		//gameWorldSp* gameWorldSp;
 		gameWorldMp* gameWorldMp;
 		MapEnts* mapEnts;

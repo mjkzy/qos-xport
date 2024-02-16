@@ -92,6 +92,12 @@ namespace command
 		});
 	}
 
+	void execute(std::string command)
+	{
+		command += "\n";
+		game::Cbuf_AddText(0, command.data());
+	}
+
 	class component final : public component_interface
 	{
 	public:

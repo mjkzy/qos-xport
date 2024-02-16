@@ -106,14 +106,17 @@ namespace map_dumper
 			std::string bsp_name = utils::string::va("maps/%s%s.d3dbsp", is_singleplayer ? "" : "mp/", name.data());
 
 			console::info("loading map '%s'...\n", name.data());
-			game::Cbuf_AddText(0, utils::string::va("%s %s", is_singleplayer ? "loadzone" : "map", name.data()));
-			game::Cbuf_AddText(0, utils::string::va("loadzone %s_load", name.data()));
+			command::execute(utils::string::va("%s %s", is_singleplayer ? "loadzone" : "map", name.data()));
+			command::execute(utils::string::va("loadzone %s_load", name.data()));
 
-			// TODO: export sounds
+			// TODO: export sounds (Louve seems to have some big function for this, i'll do it later lol)
 			console::info("exporting all sounds...\n");
 
-			// TODO: export ComWorld
 			console::info("exporting ComWorld...\n");
+			command::execute(utils::string::va("dumpcomworld %s", bsp_name.data()));
+
+			console::info("exporting GameWorld...\n");
+			command::execute(utils::string::va("dumpgameworld %s", bsp_name.data()));
 		}
 	}
 

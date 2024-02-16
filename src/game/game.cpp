@@ -70,7 +70,7 @@ namespace game
 	bool DB_IsXAssetDefault(qos::XAssetType type, const char* name)
 	{
 		int func_loc = game_offset(0x103DFC00);
-
+		bool answer = false;
 		int type_ = static_cast<int>(type);
 
 		__asm
@@ -78,6 +78,10 @@ namespace game
 			push ebx
 			mov edi, type_
 			call func_loc
+			add esp, 4
+			mov answer, al
 		}
+
+		return answer;
 	}
 }

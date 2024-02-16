@@ -69,7 +69,7 @@ namespace patches
 
 #ifdef DEBUG
 			// hook linkxassetentry to debug stuff
-			link_xasset_entry_hook.create(game::game_offset(0x103E0640), link_xasset_entry_stub);
+			//link_xasset_entry_hook.create(game::game_offset(0x103E0640), link_xasset_entry_stub);
 #endif
 
 			// stop disconnect error when starting match

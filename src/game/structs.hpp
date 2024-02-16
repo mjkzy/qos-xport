@@ -90,6 +90,39 @@ namespace game::qos
 		char* buffer; // 8
 	}; static_assert(sizeof(RawFile) == 12);
 
+	struct ComPrimaryLight
+	{
+		char type;
+		char canUseShadowMap;
+		char exponent;
+		char unused;
+		float color[3];
+		float dir[3];
+		float origin[3];
+		float radius;
+		float cosHalfFovOuter;
+		float cosHalfFovInner;
+		float cosHalfFovExpanded;
+		float rotationLimit;
+		float translationLimit;
+		const char* defName;
+	};
+
+	struct ComWorld
+	{
+		const char* name; // 0
+		int isInUse; // 4
+		unsigned int unk; // 8 (?)
+		unsigned int primaryLightCount; // 12
+		ComPrimaryLight* primaryLights; // 16
+	}; static_assert(sizeof(ComWorld) == 20);
+
+	struct gameWorldMp
+	{
+		const char* name; // 0
+		//void* g_glassData; // 4
+	}; static_assert(sizeof(gameWorldMp) == 4);
+
 	union XAssetHeader
 	{
 		void* data;
@@ -97,6 +130,11 @@ namespace game::qos
 		PhysPreset* physPreset; // not done
 		//void* physConstraints;
 		//void* destructibleDef;
+
+		ComWorld* comWorld;
+		//gameWorldSp* gameWorldSp;
+		gameWorldMp* gameWorldMp;
+
 		RawFile* rawfile;
 	};
 
