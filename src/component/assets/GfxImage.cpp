@@ -23,7 +23,7 @@ namespace gfximage
 {
 	namespace
 	{
-		static const std::unordered_set<std::string> imagesToRename =
+		static const std::unordered_set<std::string> images_to_rename =
 		{
 			"xpec_electrical_transformer_col", // Used between IW3 and IW4 but very different texture
 			"xpec_electrical_transformer_nml",
@@ -33,16 +33,16 @@ namespace gfximage
 			"refrigerator_nml",
 		};
 
-		static std::unordered_map<std::string, std::string> imagesRenamed{};
-		static std::unordered_map<std::string, std::string> imagesRenamedReverse{};
+		//static std::unordered_map<std::string, std::string> renamed_images{};
+		//static std::unordered_map<std::string, std::string> renamed_images_reverse{};
 
-		const std::string imageSuffix = "_3x";
+		//const std::string image_suffix = "_3x";
 
-		int TranslateFlags(int iw3Flags)
+		int translate_flags(int iw3Flags)
 		{
 			int iw4Flags = 0;
 
-			const auto translateFlags = [&](game::qos::file_image_flags_t sourceFlag, game::iw4::file_image_flags_t targetFlag)
+			const auto translate_flags_func = [&](game::qos::file_image_flags_t sourceFlag, game::iw4::file_image_flags_t targetFlag)
 				{
 					if (iw3Flags & sourceFlag)
 					{
@@ -50,19 +50,19 @@ namespace gfximage
 					}
 				};
 
-			translateFlags(game::qos::IMG_FLAG_NOPICMIP, game::iw4::IMG_FLAG_NOPICMIP);
-			translateFlags(game::qos::IMG_FLAG_NOMIPMAPS, game::iw4::IMG_FLAG_NOMIPMAPS);
-			translateFlags(game::qos::IMG_FLAG_CUBEMAP, game::iw4::IMG_FLAG_MAPTYPE_CUBE);
-			translateFlags(game::qos::IMG_FLAG_VOLMAP, game::iw4::IMG_FLAG_MAPTYPE_3D);
-			translateFlags(game::qos::IMG_FLAG_STREAMING, game::iw4::IMG_FLAG_STREAMING);
-			translateFlags(game::qos::IMG_FLAG_LEGACY_NORMALS, game::iw4::IMG_FLAG_LEGACY_NORMALS);
-			translateFlags(game::qos::IMG_FLAG_CLAMP_U, game::iw4::IMG_FLAG_CLAMP_U);
-			translateFlags(game::qos::IMG_FLAG_CLAMP_V, game::iw4::IMG_FLAG_CLAMP_V);
+			translate_flags_func(game::qos::IMG_FLAG_NOPICMIP, game::iw4::IMG_FLAG_NOPICMIP);
+			translate_flags_func(game::qos::IMG_FLAG_NOMIPMAPS, game::iw4::IMG_FLAG_NOMIPMAPS);
+			translate_flags_func(game::qos::IMG_FLAG_CUBEMAP, game::iw4::IMG_FLAG_MAPTYPE_CUBE);
+			translate_flags_func(game::qos::IMG_FLAG_VOLMAP, game::iw4::IMG_FLAG_MAPTYPE_3D);
+			translate_flags_func(game::qos::IMG_FLAG_STREAMING, game::iw4::IMG_FLAG_STREAMING);
+			translate_flags_func(game::qos::IMG_FLAG_LEGACY_NORMALS, game::iw4::IMG_FLAG_LEGACY_NORMALS);
+			translate_flags_func(game::qos::IMG_FLAG_CLAMP_U, game::iw4::IMG_FLAG_CLAMP_U);
+			translate_flags_func(game::qos::IMG_FLAG_CLAMP_V, game::iw4::IMG_FLAG_CLAMP_V);
 
 			// Not sure about these
-			//translateFlags(game::qos::IMG_FLAG_DYNAMIC,        game::iw4::IMG_FLAG_DYNAMIC);
-			//translateFlags(game::qos::IMG_FLAG_RENDER_TARGET,  game::iw4::IMG_FLAG_RENDER_TARGET);
-			//translateFlags(game::qos::IMG_FLAG_SYSTEMMEM,      game::iw4::IMG_FLAG_SYSTEMMEM);
+			//translate_flags_func(game::qos::IMG_FLAG_DYNAMIC,        game::iw4::IMG_FLAG_DYNAMIC);
+			//translate_flags_func(game::qos::IMG_FLAG_RENDER_TARGET,  game::iw4::IMG_FLAG_RENDER_TARGET);
+			//translate_flags_func(game::qos::IMG_FLAG_SYSTEMMEM,      game::iw4::IMG_FLAG_SYSTEMMEM);
 
 			//iw4Flags |= game::iw4::IMG_FLAG_ALPHA_WEIGHTED_COLORS;
 			//iw4Flags |= game::iw4::IMG_FLAG_GAMMA_SRGB;
@@ -70,50 +70,48 @@ namespace gfximage
 			return iw4Flags;
 		}
 
-		game::iw4::GfxImageLoadDef* ConvertLoadDef(game::qos::GfxImageLoadDef* qosLoadDef)
+		game::iw4::GfxImageLoadDef* convert_load_def(game::qos::GfxImageLoadDef* load_def)
 		{
-			auto iw4Def = reinterpret_cast<game::iw4::GfxImageLoadDef*>(utils::memory::allocate(sizeof(game::iw4::GfxImageLoadDef) + qosLoadDef->resourceSize - 4));
+			auto iw4_def = reinterpret_cast<game::iw4::GfxImageLoadDef*>(utils::memory::allocate(sizeof(game::iw4::GfxImageLoadDef) + load_def->resourceSize - 4));
 
-			std::memcpy(iw4Def->data, qosLoadDef->data, qosLoadDef->resourceSize);
-			iw4Def->flags = TranslateFlags(qosLoadDef->flags);
-			iw4Def->format = qosLoadDef->format;
-			iw4Def->levelCount = qosLoadDef->levelCount;
-			iw4Def->resourceSize = qosLoadDef->resourceSize;
+			std::memcpy(iw4_def->data, load_def->data, load_def->resourceSize);
+			iw4_def->flags = translate_flags(load_def->flags);
+			iw4_def->format = load_def->format;
+			iw4_def->levelCount = load_def->levelCount;
+			iw4_def->resourceSize = load_def->resourceSize;
 
-			return iw4Def;
+			return iw4_def;
 		}
 
 		game::iw4::GfxImage* convert(game::qos::GfxImage* image)
 		{
 			if (!image) return nullptr;
 
-			if (image == nullptr || &image == NULL) return nullptr;
-
 			std::string name = image->name;
 			if (name[0] == '*') name.erase(name.begin());
 
-			auto iw4Image = utils::memory::allocate<game::iw4::GfxImage>();
+			auto iw4_asset = utils::memory::allocate<game::iw4::GfxImage>();
 			
-			iw4Image->texture.loadDef = ConvertLoadDef(image->texture.loadDef);
+			iw4_asset->texture.loadDef = convert_load_def(image->texture.loadDef);
 
-			iw4Image->mapType = static_cast<unsigned char>(image->mapType);
-			iw4Image->semantic = static_cast<unsigned char>(image->semantic);
-			iw4Image->category = image->category;
-			iw4Image->picmip = image->picmip;
-			iw4Image->noPicmip = image->noPicmip;
-			iw4Image->track = image->track;
-			iw4Image->cardMemory = image->cardMemory;
-			iw4Image->width = image->width;
-			iw4Image->height = image->height;
-			iw4Image->depth = image->depth;
-			iw4Image->delayLoadPixels = image->delayLoadPixels;
-			iw4Image->name = image->name;
+			iw4_asset->mapType = static_cast<unsigned char>(image->mapType);
+			iw4_asset->semantic = static_cast<unsigned char>(image->semantic);
+			iw4_asset->category = image->category;
+			iw4_asset->picmip = image->picmip;
+			iw4_asset->noPicmip = image->noPicmip;
+			iw4_asset->track = image->track;
+			iw4_asset->cardMemory = image->cardMemory;
+			iw4_asset->width = image->width;
+			iw4_asset->height = image->height;
+			iw4_asset->depth = image->depth;
+			iw4_asset->delayLoadPixels = image->delayLoadPixels;
+			iw4_asset->name = image->name;
 
-			return { iw4Image };
+			return { iw4_asset };
 		}
 
-		utils::hook::detour StoreTextureDetour;
-		void StoreTextureHook()
+		utils::hook::detour store_texture_hook;
+		void store_texture_stub()
 		{
 			game::qos::GfxImageLoadDef** loadDef = *reinterpret_cast<game::qos::GfxImageLoadDef***>(game::game_offset(0x10AB8F58));
 			game::qos::GfxImage* image = *reinterpret_cast<game::qos::GfxImage**>(game::game_offset(0x10AB8E00));
@@ -125,8 +123,8 @@ namespace gfximage
 			image->texture.loadDef = reinterpret_cast<game::qos::GfxImageLoadDef*>(data);
 		}
 
-		utils::hook::detour ReleaseTextureDetour;
-		void ReleaseTextureHook(game::qos::XAssetHeader header)
+		utils::hook::detour release_texture_hook;
+		void release_texture_stub(game::qos::XAssetHeader header)
 		{
 			if (header.image && header.image->texture.loadDef)
 			{
@@ -140,13 +138,16 @@ namespace gfximage
 	public:
 		void post_load() override
 		{
+			//store_texture_hook.create(game::game_offset(0x103ADD20), store_texture_stub);
+			//release_texture_hook.create(game::game_offset(0x103ADD20), release_texture_stub);
+
 			scheduler::once([&]()
 			{
-				command::add("dumpGfxImage", [](const command::params& params)
+				command::add("dumpgfximage", [](const command::params& params)
 				{
 					if (params.size() < 2)
 					{
-						console::info("USAGE: dumpGfxImage <name>\n");
+						console::info("USAGE: dumpgfximage <name>\n");
 						return;
 					}
 
@@ -155,7 +156,7 @@ namespace gfximage
 					auto header = game::DB_FindXAssetHeader(game::qos::ASSET_TYPE_IMAGE, name);
 					if (!header.image)
 					{
-						console::error("dumpGfxImage failed on '%s'\n", name);
+						console::error("dumpgfximage failed on '%s'\n", name);
 						return;
 					}
 
@@ -164,8 +165,6 @@ namespace gfximage
 
 					console::info("dumped '%s' for IW4\n", name);
 				});
-				//StoreTextureDetour.create(game::game_offset(0x103ADD20), StoreTextureHook);
-				//ReleaseTextureDetour.create(game::game_offset(0x103ADD20), ReleaseTextureHook);
 			}, scheduler::main);
 		}
 

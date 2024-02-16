@@ -70,8 +70,6 @@ namespace game::qos
 	};
 
 #pragma region clipmap
-
-
 #pragma pack(push, 4)
 	struct cLeaf_t
 	{
@@ -102,8 +100,7 @@ namespace game::qos
 		const char* name;
 		char* entityString;
 		int numEntityChars; // The structure actually ends here...
-	};
-	static_assert(sizeof(MapEnts) == 0xC);
+	}; static_assert(sizeof(MapEnts) == 0xC);
 
 	struct clipMap_t
 	{
@@ -123,8 +120,7 @@ namespace game::qos
 		char pad_009C[24]; //0x009C
 		MapEnts* mapEnts; //0xB4
 		char pad_00B8[140]; //0x00B8
-	};
-	static_assert(sizeof(clipMap_t) == 0x144);
+	}; static_assert(sizeof(clipMap_t) == 0x144);
 #pragma endregion
 
 	struct GfxImageFileHeader
@@ -797,29 +793,135 @@ namespace game::qos
 		//void* g_glassData; // 4
 	}; static_assert(sizeof(gameWorldMp) == 4);
 
+	struct GfxWorldStreamInfo
+	{
+		int aabbTreeCount; // 0
+		// 			GfxStreamingAabbTree *aabbTrees;
+		// 			int leafRefCount;
+		// 			int *leafRefs;
+	};
 
-	// slightly different than IW3
-	//struct GfxWorld
-	//{
-	//	const char* name;			// 0
-	//	const char* baseName;		// 4
-	//	int planeCount;				// 8
-	//	void* planes;				// 12 (pointer is next to count now)
-	//	int nodeCount;				// 16
-	//	void* nodes;				// 20 ^
-	//	int indexCount;				// 24
-	//	unsigned __int16* indices;	// 28 ^
-	//	int surfaceCount;			// 32
-	//	void* surfaces;				// 36 ^
-	//	char __pad0[20];			// 40 (unresearched)
-	//	int skySurfCount;			// 60
-	//	int* skyStartSurfs;			// 64
-	//	GfxImage* skyImage;			// 68
-	//	char __pad1[4];				// 72 (unresearched)
-	//	const char* unk;			// 76 (varXString used)
+	union GfxColor
+	{
+		unsigned int packed;
+		unsigned char array[4];
+	};
 
+	union PackedUnitVec
+	{
+		unsigned int packed;
+		char array[4];
+	};
+
+	struct GfxWorldVertex
+	{
+		float xyz[3];
+		float binormalSign;
+		GfxColor color;
+		float texCoord[2];
+		float lmapCoord[2];
+		PackedUnitVec normal;
+		PackedUnitVec tangent;
+	};
+
+	struct GfxWorldVertexData
+	{
+		GfxWorldVertex* vertices;
+		void/*IDirect3DVertexBuffer9*/* worldVb;
+	};
+
+	struct GfxWorldVertexLayerData
+	{
+		char* data;
+		void/*IDirect3DVertexBuffer9*/* layerVb;
+	};
+
+#pragma pack(push, 4)
+	struct sunflare_t
+	{
+		char hasValidData; // 0
+		Material* spriteMaterial; // 4
+		Material* flareMaterial; // 8
+		float spriteSize; // 12
+		float flareMinSize;
+		float flareMinDot;
+		float flareMaxSize;
+		float flareMaxDot;
+		float flareMaxAlpha;
+		int flareFadeInTime;
+		int flareFadeOutTime;
+		float blindMinDot;
+		float blindMaxDot;
+		float blindMaxDarken;
+		int blindFadeInTime;
+		int blindFadeOutTime;
+		float glareMinDot;
+		float glareMaxDot;
+		float glareMaxLighten;
+		int glareFadeInTime;
+		int glareFadeOutTime;
+		float sunFxPosition[3];
+	};
+#pragma pack(pop)
+
+	struct GfxWorld // slightly different than IW3
+	{
+		const char* name;			// 0
+		const char* baseName;		// 4
+		int planeCount;				// 8
+		void* planes;				// 12 (pointer is next to count now)
+		int nodeCount;				// 16
+		void* nodes;				// 20 ^
+		int indexCount;				// 24
+		unsigned __int16* indices;	// 28 ^ (is this indices?? idk...)
+		int surfaceCount;			// 32
+		void* surfaces;				// 36 ^
+		char __pad0[20];			// 40 (unknown between here and 60)
+		int skySurfCount;			// 60
+		int* skyStartSurfs;			// 64
+		GfxImage* skyImage;			// 68
+		char __pad1[4];				// 72 (unresearched)
+		const char* unk_1;			// 76 (varXString used)
+		unsigned int vertexCount;	// 80
+		GfxWorldVertexData vd;		// 84
+		unsigned int vertexLayerDataSize;	// 92
+		GfxWorldVertexLayerData vld;		// 96
+		char __pad2[128 + 28];				// 104
+
+									// 232 (idk what that is?)
+		int cullGroupCount;			// 260
+		unsigned char reflectionProbeCount; // 264
+		unsigned char* reflectionProbes;	// 268
+		void* cullGroups;			// 272 (from GfxWorldDpvsStatic?)
+		int smodelCount;			// 276 ^
+		void* smodelDrawInsts;		// 280 ^
+		void* smodelInsts;			// 284 ?
+		int cellBitsCount;			// 288
+		int unk_2;					// 292 idrk lmao
+		void* cells;				// 296
+		int lightmapCount;			// 300
+		void* lightmaps;			// 304
+		char lightGrid[52];			// 308
+
+		int modelCount;				// 360
+		void* models;				// 364
+		char __pad3[28];			// 368
+
+		int materialMemoryCount;	// 396
+		void* materialMemory;		// 400
+		sunflare_t sun;					// 404
+		char __pad4[64];				// 500
+		// float outdoorLookupMatrix[4][4];
+		void* outdoorImage;				// 564
+		char __pad5[16];				// 568
+		unsigned int* cellCasterBits;	// 584
+		unsigned int* sceneEntCellBits;	// 588
+		void* sceneDynModel;		// 592
+		void* sceneDynBrush;		// 596
+
+		char __pad6[128]; // 600
 	//	// TODO
-	//}; static_assert(sizeof(GfxWorld) == 728, "GfxWorld is the wrong size"); // 732 -> 728 (4 byte difference from COD4..)
+	}; static_assert(sizeof(GfxWorld) == 728, "GfxWorld is the wrong size"); // 732 -> 728 (4 byte difference from COD4..)
 
 	union XAssetHeader
 	{
@@ -835,7 +937,7 @@ namespace game::qos
 		//gameWorldSp* gameWorldSp;
 		gameWorldMp* gameWorldMp;
 		clipMap_t* clipMap;
-		//GfxWorld* gfxWorld;
+		GfxWorld* gfxWorld;
 
 		RawFile* rawfile;
 	};

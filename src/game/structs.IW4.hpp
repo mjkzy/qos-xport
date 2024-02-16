@@ -923,7 +923,6 @@ namespace game::iw4
 		FX_ELEM_TYPE_LAST_DRAWN = 0x9,
 	};
 
-
 	union FxEffectDefRef
 	{
 		struct FxEffectDef* handle;
@@ -1224,7 +1223,6 @@ namespace game::iw4
 		water_t* water;
 	};
 
-
 	struct MaterialTextureDef
 	{
 		unsigned int nameHash;
@@ -1234,8 +1232,6 @@ namespace game::iw4
 		unsigned char semantic; // TextureSemantic
 		MaterialTextureDefInfo u;
 	};
-
-
 
 	enum MaterialStreamRoutingSource : unsigned char
 	{
@@ -1253,7 +1249,6 @@ namespace game::iw4
 		STREAM_SRC_COUNT = 0x9,
 	};
 
-	/* 227 */
 	enum MaterialStreamRoutingDestination : unsigned char
 	{
 		STREAM_DST_POSITION = 0x0,
@@ -1271,7 +1266,6 @@ namespace game::iw4
 		STREAM_DST_TEXCOORD_7 = 0xC,
 		STREAM_DST_COUNT = 0xD,
 	};
-
 
 	struct MaterialStreamRouting
 	{
@@ -1323,11 +1317,10 @@ namespace game::iw4
 		char cameraRegion;
 		MaterialTechniqueSet* techniqueSet;
 		MaterialTextureDef* textureTable;
-		game::qos::MaterialConstantDef* constantTable;
-		game::qos::GfxStateBits* stateBitTable;
+		qos::MaterialConstantDef* constantTable;
+		qos::GfxStateBits* stateBitTable;
 	};
 #pragma pack(pop)
-
 
 	struct FxTrailDef
 	{
