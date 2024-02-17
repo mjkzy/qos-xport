@@ -344,9 +344,18 @@ namespace game::iw4
 		float radiusSquared;
 	};
 
+	struct srfTriangles_t
+	{
+		int vertexLayerData;
+		int firstVertex;
+		unsigned __int16 vertexCount;
+		unsigned __int16 triCount;
+		int baseIndex;
+	};
+
 	struct GfxSurface
 	{
-		// TODO //qos::srfTriangles_t tris;
+		srfTriangles_t tris;
 		Material* material;
 		unsigned char lightmapIndex;
 		unsigned char reflectionProbeIndex;
@@ -408,7 +417,7 @@ namespace game::iw4
 		unsigned char primaryLightIndex;
 		unsigned char flags;
 		unsigned char firstMtlSkinIndex;
-		// TODO //qos::GfxColor groundLighting;
+		game::qos::GfxColor groundLighting;
 		unsigned __int16 cacheId[4];
 	};
 
@@ -451,6 +460,29 @@ namespace game::iw4
 		GfxImage* secondary;
 	};
 
+	struct GfxWorldVertex
+	{
+		float xyz[3];
+		float binormalSign;
+		game::qos::GfxColor color;
+		float texCoord[2];
+		float lmapCoord[2];
+		game::qos::PackedUnitVec normal;
+		game::qos::PackedUnitVec tangent;
+	};
+
+	struct GfxWorldVertexData
+	{
+		GfxWorldVertex* vertices;
+		void/*IDirect3DVertexBuffer9*/* worldVb;
+	};
+
+	struct GfxWorldVertexLayerData
+	{
+		char* data;
+		void/*IDirect3DVertexBuffer9*/* layerVb;
+	};
+
 	struct GfxWorldDraw
 	{
 		unsigned int reflectionProbeCount;
@@ -464,9 +496,9 @@ namespace game::iw4
 		GfxImage* skyImage;
 		GfxImage* outdoorImage;
 		unsigned int vertexCount;
-		// TODO //qos::GfxWorldVertexData vd;
+		GfxWorldVertexData vd;
 		unsigned int vertexLayerDataSize;
-		// TODO //qos::GfxWorldVertexLayerData vld;
+		GfxWorldVertexLayerData vld;
 		int indexCount;
 		unsigned __int16* indices;
 	};
@@ -708,12 +740,12 @@ namespace game::iw4
 		unsigned int* cellCasterBits; // 416
 		unsigned int* cellHasSunLitSurfsBits; // 420
 		GfxSceneDynModel* sceneDynModel; // 424
-		// TODO //qos::GfxSceneDynBrush* sceneDynBrush; // 428
+		game::qos::GfxSceneDynBrush* sceneDynBrush; // 428
 		unsigned int* primaryLightEntityShadowVis; // 432
 		unsigned int* primaryLightDynEntShadowVis[2]; // 436
 		char* nonSunPrimaryLightForModelDynEnt; // 444
-		// TODO //qos::GfxShadowGeometry* shadowGeom; // 448
-		// TODO //qos::GfxLightRegion* lightRegion; // 452
+		game::qos::GfxShadowGeometry* shadowGeom; // 448
+		game::qos::GfxLightRegion* lightRegion; // 452
 		GfxWorldDpvsStatic dpvs; // 456
 		GfxWorldDpvsDynamic dpvsDyn; // 564
 		unsigned int mapVtxChecksum; // 612
@@ -783,13 +815,19 @@ namespace game::iw4
 		G_GlassData* g_glassData;
 	};
 
+	union CollisionAabbTreeIndex
+	{
+		int firstChildIndex;
+		int partitionIndex;
+	};
+
 	struct CollisionAabbTree
 	{
 		float midPoint[3];
 		unsigned __int16 materialIndex;
 		unsigned __int16 childCount;
 		float halfSize[3];
-		// TODO //qos::CollisionAabbTreeIndex u;
+		CollisionAabbTreeIndex u;
 	};
 
 	struct cbrushside_t
@@ -961,12 +999,17 @@ namespace game::iw4
 		int leafBrushNode;
 	};
 
+	struct cLeafBrushNodeLeaf_t
+	{
+		unsigned __int16* brushes;
+	};
+
 	struct cLeafBrushNode_t
 	{
 		char axis;
 		__int16 leafBrushCount;
 		int contents;
-		// TODO //qos::cLeafBrushNodeLeaf_t data;
+		cLeafBrushNodeLeaf_t data;
 		char pad[8];
 	};
 
@@ -1031,38 +1074,111 @@ namespace game::iw4
 		FxElemVisuals instance;
 	};
 
+	struct FxSpawnDefLooping
+	{
+		int intervalMsec;
+		int count;
+	};
+
+	struct FxIntRange
+	{
+		int base;
+		int amplitude;
+	};
+
+	struct FxSpawnDefOneShot
+	{
+		FxIntRange count;
+	};
+
+	union FxSpawnDef
+	{
+		FxSpawnDefLooping looping;
+		FxSpawnDefOneShot oneShot;
+	};
+
+	struct FxFloatRange
+	{
+		float base;
+		float amplitude;
+	};
+
+	struct FxElemAtlas
+	{
+		char behavior;
+		char index;
+		char fps;
+		char loopCount;
+		char colIndexBits;
+		char rowIndexBits;
+		__int16 entryCount;
+	};
+
+	struct FxElemVec3Range
+	{
+		float base[3];
+		float amplitude[3];
+	};
+
+	struct FxElemVelStateInFrame
+	{
+		FxElemVec3Range velocity;
+		FxElemVec3Range totalDelta;
+	};
+
+	const struct FxElemVelStateSample
+	{
+		FxElemVelStateInFrame local;
+		FxElemVelStateInFrame world;
+	};
+
+	struct FxElemVisualState
+	{
+		char color[4];
+		float rotationDelta;
+		float rotationTotal;
+		float size[2];
+		float scale;
+	};
+
+	const struct FxElemVisStateSample
+	{
+		FxElemVisualState base;
+		FxElemVisualState amplitude;
+	};
+
 	struct FxElemDef
 	{
 		int flags;
-		// TODO //qos::FxSpawnDef spawn;
-		// TODO //qos::FxFloatRange spawnRange;
-		// TODO //qos::FxFloatRange fadeInRange;
-		// TODO //qos::FxFloatRange fadeOutRange;
+		FxSpawnDef spawn;
+		FxFloatRange spawnRange;
+		FxFloatRange fadeInRange;
+		FxFloatRange fadeOutRange;
 		float spawnFrustumCullRadius;
-		// TODO //qos::FxIntRange spawnDelayMsec;
-		// TODO //qos::FxIntRange lifeSpanMsec;
-		// TODO //qos::FxFloatRange spawnOrigin[3];
-		// TODO //qos::FxFloatRange spawnOffsetRadius;
-		// TODO //qos::FxFloatRange spawnOffsetHeight;
-		// TODO //qos::FxFloatRange spawnAngles[3];
-		// TODO //qos::FxFloatRange angularVelocity[3];
-		// TODO //qos::FxFloatRange initialRotation;
-		// TODO //qos::FxFloatRange gravity;
-		// TODO //qos::FxFloatRange reflectionFactor;
-		// TODO //qos::FxElemAtlas atlas;
+		FxIntRange spawnDelayMsec;
+		FxIntRange lifeSpanMsec;
+		FxFloatRange spawnOrigin[3];
+		FxFloatRange spawnOffsetRadius;
+		FxFloatRange spawnOffsetHeight;
+		FxFloatRange spawnAngles[3];
+		FxFloatRange angularVelocity[3];
+		FxFloatRange initialRotation;
+		FxFloatRange gravity;
+		FxFloatRange reflectionFactor;
+		FxElemAtlas atlas;
 		FxElemType elemType;
 		char visualCount;
 		char velIntervalCount;
 		char visStateIntervalCount;
-		// TODO //qos::FxElemVelStateSample* velSamples;
-		// TODO //qos::FxElemVisStateSample* visSamples;
+		FxElemVelStateSample* velSamples;
+		FxElemVisStateSample* visSamples;
 		FxElemDefVisuals visuals;
 		Bounds bounds;
 		FxEffectDefRef effectOnImpact; // ~
 		FxEffectDefRef effectOnDeath; // ~
 		FxEffectDefRef effectEmitted; // ~
-		// TODO //qos::FxFloatRange emitDist;
-		// TODO //qos::FxFloatRange emitDistVariance;
+		FxFloatRange emitDist;
+		FxFloatRange emitDistVariance;
 		struct FxTrailDef* trailDef; // FxElemExtendedDef; qos only has trails
 		char sortOrder;
 		char lightingFrac;
@@ -1082,18 +1198,80 @@ namespace game::iw4
 		FxElemDef* elemDefs;
 	};
 
+	struct GfxPlacement
+	{
+		float quat[4];
+		float origin[3];
+	};
+
+	struct PhysMass
+	{
+		float centerOfMass[3];
+		float momentsOfInertia[3];
+		float productsOfInertia[3];
+	};
+
 	struct DynEntityDef
 	{
 		int type; // Identical in qos
-		// TODO //qos::GfxPlacement pose;
+		GfxPlacement pose;
 		XModel* xModel;
 		unsigned short brushModel;
 		unsigned short physicsBrushModel;
 		FxEffectDef* destroyFx;
 		struct PhysPreset* physPreset;
 		int health;
-		// TODO //qos::PhysMass mass;
+		PhysMass mass;
 		int contents;
+	};
+
+	struct cNode_t
+	{
+		game::qos::cplane_s* plane;
+		__int16 children[2];
+	};
+
+	struct cLeafBrushNodeLeaf_t
+	{
+		unsigned __int16* brushes;
+	};
+
+	struct cLeafBrushNodeChildren_t
+	{
+		float dist;
+		float range;
+		unsigned __int16 childOffset[2];
+	};
+
+	union cLeafBrushNodeData_t
+	{
+		cLeafBrushNodeLeaf_t leaf;
+		cLeafBrushNodeChildren_t children;
+	};
+
+	struct cLeafBrushNode_s
+	{
+		char axis;
+		__int16 leafBrushCount;
+		int contents;
+		cLeafBrushNodeData_t data;
+	};
+
+	struct CollisionBorder
+	{
+		float distEq[3];
+		float zBase;
+		float zSlope;
+		float start;
+		float length;
+	};
+
+	struct CollisionPartition
+	{
+		char triCount;
+		char borderCount;
+		int firstTri;
+		CollisionBorder* borders;
 	};
 
 	struct clipMap_t
@@ -1101,7 +1279,7 @@ namespace game::iw4
 		const char* name;
 		int isInUse;
 		int planeCount;
-		// TODO //qos::cplane_s* planes;
+		game::qos::cplane_s* planes;
 		unsigned int numStaticModels;
 		cStaticModel_t* staticModelList;
 		unsigned int numMaterials;
@@ -1111,11 +1289,11 @@ namespace game::iw4
 		unsigned int numBrushEdges;
 		char* brushEdges;
 		unsigned int numNodes;
-		// TODO //qos::cNode_t* nodes;
+		cNode_t* nodes;
 		unsigned int numLeafs;
 		cLeaf_t* leafs;
 		unsigned int leafbrushNodesCount;
-		// TODO //qos::cLeafBrushNode_s* leafbrushNodes;
+		cLeafBrushNode_s* leafbrushNodes;
 		unsigned int numLeafBrushes;
 		unsigned short* leafbrushes;
 		unsigned int numLeafSurfaces;
@@ -1126,9 +1304,9 @@ namespace game::iw4
 		unsigned short* triIndices;
 		char* triEdgeIsWalkable;
 		int borderCount;
-		// TODO //qos::CollisionBorder* borders;
+		CollisionBorder* borders;
 		int partitionCount;
-		// TODO //qos::CollisionPartition* partitions;
+		CollisionPartition* partitions;
 		int aabbTreeCount;
 		CollisionAabbTree* aabbTrees;
 		unsigned int numSubModels;
@@ -1281,10 +1459,21 @@ namespace game::iw4
 		unsigned char packed;
 	};
 
+	struct WaterWritable
+	{
+		float floatTime;
+	};
+
+	struct complex_s
+	{
+		float real;
+		float imag;
+	};
+
 	struct water_t
 	{
-		// TODO //qos::WaterWritable writable;
-		// TODO //qos::complex_s* H0;
+		WaterWritable writable;
+		complex_s* H0;
 		float* wTerm;
 		int M;
 		int N;
@@ -1375,7 +1564,7 @@ namespace game::iw4
 		bool hasBeenUploaded;
 		char unused[1];
 		MaterialTechniqueSet* remappedTechniqueSet;
-		// TODO //qos::MaterialTechnique* techniques[48];
+		game::qos::MaterialTechnique* techniques[48];
 	};
 
 #pragma pack(push, 4)
@@ -1411,7 +1600,7 @@ namespace game::iw4
 		float invSplitArcDist;
 		float invSplitTime;
 		int vertCount;
-		// TODO //qos::FxTrailVertex* verts;
+		game::qos::FxTrailVertex* verts;
 		int indCount;
 		unsigned __int16* inds;
 	};
@@ -1585,6 +1774,92 @@ namespace game::iw4
 		unsigned int intValue;
 	};
 
+	struct _AILSOUNDINFO
+	{
+		int format;
+		const void* data_ptr;
+		unsigned int data_len;
+		unsigned int rate;
+		int bits;
+		int channels;
+		unsigned int samples;
+		unsigned int block_size;
+		const void* initial_ptr;
+	};
+
+	struct MssSound
+	{
+		_AILSOUNDINFO info;
+		char* data;
+	};
+
+	struct LoadedSound
+	{
+		const char* name;
+		MssSound sound;
+	};
+
+	struct StreamFileNameRaw
+	{
+		const char* dir;
+		const char* name;
+	};
+
+	union StreamFileInfo
+	{
+		StreamFileNameRaw raw;
+	};
+
+	struct StreamFileName
+	{
+		StreamFileInfo info;
+	};
+
+	struct StreamedSound
+	{
+		StreamFileName filename;
+	};
+
+	union SoundFileRef
+	{
+		LoadedSound* loadSnd;
+		StreamedSound streamSnd;
+	};
+
+	struct SoundFile
+	{
+		char type;
+		char exists;
+		SoundFileRef u;
+	};
+
+	struct SndCurve
+	{
+		const char* filename;
+		int knotCount;
+		float knots[8][2];
+	};
+
+	struct MSSSpeakerLevels
+	{
+		int speaker;
+		int numLevels;
+		float levels[2];
+	};
+
+	struct MSSChannelMap
+	{
+		unsigned int speakerCount;
+		MSSSpeakerLevels speakers[6];
+	};
+
+	struct SpeakerMap
+	{
+		bool isDefault;
+		const char* name;
+		MSSChannelMap channelMaps[2][2];
+	};
+
 	struct snd_alias_t
 	{
 		const char* aliasName;
@@ -1592,7 +1867,7 @@ namespace game::iw4
 		const char* secondaryAliasName;
 		const char* chainAliasName;
 		const char* mixerGroup;
-		// TODO //qos::SoundFile* soundFile;
+		SoundFile* soundFile;
 		int sequence;
 		float volMin;
 		float volMax;
@@ -1607,11 +1882,11 @@ namespace game::iw4
 		float lfePercentage;
 		float centerPercentage;
 		int startDelay;
-		// TODO //qos::SndCurve* volumeFalloffCurve;
+		SndCurve* volumeFalloffCurve;
 		float envelopMin;
 		float envelopMax;
 		float envelopPercentage;
-		// TODO //qos::SpeakerMap* speakerMap;
+		SpeakerMap* speakerMap;
 	};
 
 	struct snd_alias_list_t
@@ -1831,6 +2106,78 @@ namespace game::iw4
         MISSILE_GUIDANCE_COUNT = 0x4,
     };
 
+	enum activeReticleType_t
+	{
+		VEH_ACTIVE_RETICLE_NONE = 0x0,
+		VEH_ACTIVE_RETICLE_PIP_ON_A_STICK = 0x1,
+		VEH_ACTIVE_RETICLE_BOUNCING_DIAMOND = 0x2,
+		VEH_ACTIVE_RETICLE_COUNT = 0x3,
+	};
+
+	enum weaponIconRatioType_t
+	{
+		WEAPON_ICON_RATIO_1TO1 = 0x0,
+		WEAPON_ICON_RATIO_2TO1 = 0x1,
+		WEAPON_ICON_RATIO_4TO1 = 0x2,
+		WEAPON_ICON_RATIO_COUNT = 0x3,
+	};
+
+	enum ammoCounterClipType_t
+	{
+		AMMO_COUNTER_CLIP_NONE = 0x0,
+		AMMO_COUNTER_CLIP_MAGAZINE = 0x1,
+		AMMO_COUNTER_CLIP_SHORTMAGAZINE = 0x2,
+		AMMO_COUNTER_CLIP_SHOTGUN = 0x3,
+		AMMO_COUNTER_CLIP_ROCKET = 0x4,
+		AMMO_COUNTER_CLIP_BELTFED = 0x5,
+		AMMO_COUNTER_CLIP_ALTWEAPON = 0x6,
+		AMMO_COUNTER_CLIP_COUNT = 0x7,
+	};
+
+	enum weapOverlayReticle_t
+	{
+		WEAPOVERLAYRETICLE_NONE = 0x0,
+		WEAPOVERLAYRETICLE_CROSSHAIR = 0x1,
+		WEAPOVERLAYRETICLE_NUM = 0x2,
+	};
+
+	enum WeapOverlayInteface_t
+	{
+		WEAPOVERLAYINTERFACE_NONE = 0x0,
+		WEAPOVERLAYINTERFACE_JAVELIN = 0x1,
+		WEAPOVERLAYINTERFACE_TURRETSCOPE = 0x2,
+		WEAPOVERLAYINTERFACECOUNT = 0x3,
+	};
+
+	enum weapProjExposion_t
+	{
+		WEAPPROJEXP_GRENADE = 0x0,
+		WEAPPROJEXP_ROCKET = 0x1,
+		WEAPPROJEXP_FLASHBANG = 0x2,
+		WEAPPROJEXP_NONE = 0x3,
+		WEAPPROJEXP_DUD = 0x4,
+		WEAPPROJEXP_SMOKE = 0x5,
+		WEAPPROJEXP_HEAVY = 0x6,
+		WEAPPROJEXP_NUM = 0x7,
+	};
+
+	enum PenetrateType
+	{
+		PENETRATE_TYPE_NONE = 0x0,
+		PENETRATE_TYPE_SMALL = 0x1,
+		PENETRATE_TYPE_MEDIUM = 0x2,
+		PENETRATE_TYPE_LARGE = 0x3,
+		PENETRATE_TYPE_COUNT = 0x4,
+	};
+
+	enum weapStance_t
+	{
+		WEAPSTANCE_STAND = 0x0,
+		WEAPSTANCE_DUCK = 0x1,
+		WEAPSTANCE_PRONE = 0x2,
+		WEAPSTANCE_NUM = 0x3,
+	};
+
     struct __declspec(align(4)) WeaponDef
     {
         const char* szOverlayName;
@@ -1846,11 +2193,11 @@ namespace game::iw4
         int playerAnimType;
         weapType_t weapType;
         weapClass_t weapClass;
-        // TODO //qos::PenetrateType penetrateType;
+        PenetrateType penetrateType;
         weapInventoryType_t inventoryType;
         weapFireType_t fireType;
         OffhandClass offhandClass;
-        // TODO //qos::weapStance_t stance;
+        weapStance_t stance;
         FxEffectDef* viewFlashEffect;
         FxEffectDef* worldFlashEffect;
         snd_alias_list_t* pickupSound;
@@ -1910,7 +2257,7 @@ namespace game::iw4
         int iReticleCenterSize;
         int iReticleSideSize;
         int iReticleMinOfs;
-        // TODO //qos::activeReticleType_t activeReticleType;
+        activeReticleType_t activeReticleType;
         float vStandMove[3];
         float vStandRot[3];
         float strafeMove[3];
@@ -1937,12 +2284,12 @@ namespace game::iw4
         XModel* knifeModel;
         XModel* worldKnifeModel;
         Material* hudIcon;
-        // TODO //qos::weaponIconRatioType_t hudIconRatio;
+        weaponIconRatioType_t hudIconRatio;
         Material* pickupIcon;
-        // TODO //qos::weaponIconRatioType_t pickupIconRatio;
+        weaponIconRatioType_t pickupIconRatio;
         Material* ammoCounterIcon;
-        // TODO //qos::weaponIconRatioType_t ammoCounterIconRatio;
-        // TODO //qos::ammoCounterClipType_t ammoCounterClip;
+        weaponIconRatioType_t ammoCounterIconRatio;
+        ammoCounterClipType_t ammoCounterClip;
         int iStartAmmo;
         const char* szAmmoName;
         int iAmmoIndex;
@@ -2011,8 +2358,8 @@ namespace game::iw4
         Material* overlayMaterialLowRes;
         Material* overlayMaterialEMP;
         Material* overlayMaterialEMPLowRes;
-        // TODO //qos::weapOverlayReticle_t overlayReticle;
-        // TODO //qos::WeapOverlayInteface_t overlayInterface;
+        weapOverlayReticle_t overlayReticle;
+        WeapOverlayInteface_t overlayInterface;
         float overlayWidth;
         float overlayHeight;
         float overlayWidthSplitscreen;
@@ -2057,7 +2404,7 @@ namespace game::iw4
         float adsViewErrorMax;
         PhysCollmap* physCollmap;
         float dualWieldViewModelOffset;
-        // TODO //qos::weaponIconRatioType_t killIconRatio;
+        weaponIconRatioType_t killIconRatio;
         int iReloadAmmoAdd;
         int iReloadStartAdd;
         int ammoDropStockMin;
@@ -2078,7 +2425,7 @@ namespace game::iw4
         float timeToAccelerate;
         float projectileCurvature;
         XModel* projectileModel;
-        // TODO //qos::weapProjExposion_t projExplosion;
+        weapProjExposion_t projExplosion;
         FxEffectDef* projExplosionEffect;
         FxEffectDef* projDudEffect;
         snd_alias_list_t* projExplosionSound;
@@ -2266,7 +2613,7 @@ namespace game::iw4
         int iClipSize;
         ImpactType impactType;
         int iFireTime;
-        // TODO //qos::weaponIconRatioType_t dpadIconRatio;
+        weaponIconRatioType_t dpadIconRatio;
         float penetrateMultiplier;
         float fAdsViewKickCenterSpeed;
         float fHipViewKickCenterSpeed;
