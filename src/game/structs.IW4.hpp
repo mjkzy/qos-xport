@@ -609,6 +609,23 @@ namespace game::iw4
 		float sunFxPosition[3];
 	};
 
+	struct cplane_s
+	{
+		float normal[3];
+		float dist;
+		char type;
+		char signbits;
+		char pad[2];
+	};
+
+	struct GfxWorldDpvsPlanes
+	{
+		int cellCount; // 0
+		cplane_s* planes; // 4
+		unsigned __int16* nodes; // 8 
+		unsigned int* sceneEntCellBits; // 12
+	}; static_assert(sizeof(GfxWorldDpvsPlanes) == 16);
+
 	struct GfxWorld
 	{
 		const char* name;
@@ -624,7 +641,7 @@ namespace game::iw4
 		unsigned int sortKeyEffectDecal;
 		unsigned int sortKeyEffectAuto;
 		unsigned int sortKeyDistortion;
-		// TODO //qos::GfxWorldDpvsPlanes dpvsPlanes;
+		GfxWorldDpvsPlanes dpvsPlanes;
 		GfxCellTreeCount* aabbTreeCounts;
 		GfxCellTree* aabbTrees;
 		GfxCell* cells;

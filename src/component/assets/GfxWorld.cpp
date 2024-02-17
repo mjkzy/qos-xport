@@ -39,7 +39,15 @@ namespace gfxworld
 				sky->skyImage = assethandler::convert_asset_header(game::qos::ASSET_TYPE_IMAGE, { world->skyImage }).image;
 			}
 
-			//sky->skySamplerState = world->skySamplerState;
+			sky->skySamplerState = world->skySamplerState/* & 0xFF*/;
+			sky->skyStartSurfs = world->skyStartSurfs;
+			sky->skySurfCount = world->skySurfCount;
+
+			iw4_asset.lastSunPrimaryLightIndex = world->sunPrimaryLightIndex;
+			iw4_asset.primaryLightCount = world->primaryLightCount;
+
+			// not found on QoS?
+			//iw4_asset.dpvsPlanes = world->dpvsPlanes;
 
 			auto iw4_asset_output = utils::memory::allocate<game::iw4::GfxWorld>();
 			*iw4_asset_output = iw4_asset;

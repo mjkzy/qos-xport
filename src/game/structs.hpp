@@ -961,6 +961,75 @@ namespace game::qos
 	};
 #pragma pack(pop)
 
+	struct __declspec(align(4)) GfxLightImage
+	{
+		GfxImage* image;
+		char samplerState;
+	};
+
+	struct GfxLightDef
+	{
+		const char* name;
+		GfxLightImage attenuation;
+		int lmapLookupStart;
+	};
+
+	struct GfxLight
+	{
+		char type; // 0
+		char canUseShadowMap; // 1
+		char unused[2]; // 2
+		float color[3]; // 4
+		float dir[3]; // 16
+		float origin[3]; // 28
+		float radius; // 40
+		float cosHalfFovOuter; // 44
+		float cosHalfFovInner; // 48
+		int exponent; // 52
+		unsigned int spotShadowIndex; // 56
+		int unk; // 60
+		GfxLightDef* def; // 64
+	}; static_assert(sizeof(GfxLight) == 68);
+
+	struct GfxLightmapArray
+	{
+		GfxImage* primary; // 0
+		GfxImage* secondary; // 4
+	}; static_assert(sizeof(GfxLightmapArray) == 8);
+
+	struct GfxLightGrid
+	{
+		//char hasLightRegions; // 0
+		unsigned int sunPrimaryLightIndex; // 0
+		unsigned __int16 mins[3]; // 4
+		unsigned __int16 maxs[3]; // 10
+		unsigned int rowAxis; // 16
+		unsigned int colAxis; // 20
+		unsigned __int16* rowDataStart; // 24
+		unsigned int rawRowDataSize; // 28
+		char* rawRowData; // 32
+		unsigned int entryCount; // 36
+		void* entries; // 40
+		unsigned int colorCount; // 44
+		void* colors; // 48
+	}; static_assert(sizeof(GfxLightGrid) == 52); // PLF claims it's 56, but that could literally just be Wii version
+
+	struct GfxBrushModelWritable
+	{
+		float mins[3];
+		float maxs[3];
+	};
+
+	struct __declspec(align(4)) GfxBrushModel
+	{
+		GfxBrushModelWritable writable; // 0
+		float bounds[2][3]; // 24
+		unsigned __int16 surfaceCount; // 48
+		unsigned __int16 startSurfIndex;
+		unsigned __int16 surfaceCountNoDecal;
+	};
+
+#pragma pack(push, 4)
 	struct GfxWorld // slightly different than IW3
 	{
 		const char* name;			// 0
@@ -977,48 +1046,69 @@ namespace game::qos
 		int skySurfCount;			// 60
 		int* skyStartSurfs;			// 64
 		GfxImage* skyImage;			// 68
-		char __pad1[4];				// 72 (unresearched)
-		const char* unk_1;			// 76 (varXString used)
+		char skySamplerState;		// 72 (i think?)
+		const char* skyDomeImage;	// 76 (varXString used, name madeup)
 		unsigned int vertexCount;	// 80
 		GfxWorldVertexData vd;		// 84
 		unsigned int vertexLayerDataSize;	// 92
 		GfxWorldVertexLayerData vld;		// 96
-		char __pad2[128 + 28];				// 104
-
-									// 232 (idk what that is?)
-		int cullGroupCount;			// 260
+		char __pad2[128];					// 104
+		GfxLight* sunLight;					// 232
+		float sunColorFromBsp[3];			// 236
+		unsigned int sunPrimaryLightIndex;	// 248
+		unsigned int primaryLightCount;		// 252
+		int __pad3;							// 256
+		int cullGroupCount;					// 260 (shows 0 debugging)
 		unsigned char reflectionProbeCount; // 264
 		unsigned char* reflectionProbes;	// 268
 		void* cullGroups;			// 272 (from GfxWorldDpvsStatic?)
-		int smodelCount;			// 276 ^
+		int smodelCount;			// 276 ^ (cellCount?)
 		void* smodelDrawInsts;		// 280 ^
 		void* smodelInsts;			// 284 ?
 		int cellBitsCount;			// 288
-		int unk_2;					// 292 idrk lmao
+		int unk_2;					// 292 (some sort of count variable)
 		void* cells;				// 296
 		int lightmapCount;			// 300
-		void* lightmaps;			// 304
-		char lightGrid[52];			// 308
-
+		GfxLightmapArray* lightmaps;// 304
+		GfxLightGrid lightGrid;		// 308
 		int modelCount;				// 360
-		void* models;				// 364
-		char __pad3[28];			// 368
-
+		GfxBrushModel* models;		// 364
+		float mins[3];				// 368
+		float maxs[3];				// 380
+		unsigned int checksum;		// 392
 		int materialMemoryCount;	// 396
 		void* materialMemory;		// 400
-		sunflare_t sun;					// 404
-		char __pad4[64];				// 500
-		// float outdoorLookupMatrix[4][4];
-		void* outdoorImage;				// 564
-		char __pad5[16];				// 568
-		unsigned int* cellCasterBits;	// 584
-		unsigned int* sceneEntCellBits;	// 588
-		void* sceneDynModel;		// 592
-		void* sceneDynBrush;		// 596
-
-		char __pad6[128]; // 600
-	//	// TODO
-	}; static_assert(sizeof(GfxWorld) == 728, "GfxWorld is the wrong size"); // 732 -> 728 (4 byte difference from COD4..)
+		sunflare_t sun;				// 404
+		float outdoorLookupMatrix[4][4];		// 500
+		GfxImage* outdoorImage;					// 564
+		unsigned int dynEntClientCount[2];		// 568 (572)
+		unsigned int* dynEntCellBits[2];		// 576 (bad data?)
+		unsigned int* cellCasterBits;			// 584
+		void* sceneDynModel;					// 588 (sceneEntCellBits?)
+		void* sceneDynBrush;					// 592
+		void* primaryLightEntityShadowVis_idk;				// 596
+		unsigned int* primaryLightDynEntShadowVis_idk[2];	// 600
+		char* nonSunPrimaryLightForModelDynEnt;	// 608
+		void* shadowGeom_idk;					// 612
+		void* surfaceMaterials;					// 616 (confirmed)
+		unsigned int* surfaceCastsSunShadow;	// 620 ^
+		char __pad6[56];			// 624
+		void* gfxDynEntCellRef;		// 680
+		void* gfxDynEntCellRef2;	// 684
+		void* unk_ptr_0;			// 688
+		void* unk_ptr_1;			// 692
+		short primaryLightForModelDynEnt;				// 696
+		short unk_short_0;								// 698
+		unsigned int* primaryLightEntityShadowVis;		// 700
+		unsigned int* primaryLightDynEntShadowVis[2];	// 704 (708)
+		void* shadowGeom;		// 712
+		int lightRegionCount;	// 716 (maybe???)
+		void* lightRegion;		// 720 ^ idk what this is
+		Material* material_idk;	// 724
+	}; 
+	static_assert(sizeof(GfxWorld) == 728); // 732 -> 728 (4 byte difference from COD4..)
+	static_assert(offsetof(GfxWorld, sunLight) == 232);
+#pragma pack(pop)
 
 	union XAssetHeader
 	{
