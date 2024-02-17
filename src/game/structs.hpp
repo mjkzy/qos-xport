@@ -651,7 +651,6 @@ namespace game::qos
 	{
 		MaterialInfo info; // 0
 		char __pad0[8]; // 24 (rest of MaterialInfo?)
-
 		char stateBitsEntry[35]; // 32
 		char textureCount; // 67
 		char constantCount; // 68
@@ -1027,12 +1026,100 @@ namespace game::qos
 		unsigned __int16 surfaceCountNoDecal;
 	};
 
-	struct GfxWorldDpvsDynamic
+	struct GfxReflectionProbe
 	{
-		unsigned int dynEntClientWordCount[2];
-		unsigned int dynEntClientCount[2];
-		unsigned int* dynEntCellBits[2];
-		char* dynEntVisData[2][3];
+		float origin[3]; // 0
+		GfxImage* reflectionImage; // 12
+	}; static_assert(sizeof(GfxReflectionProbe) == 16);
+
+	struct GfxPackedPlacement
+	{
+		float origin[3]; // 0
+		vec3_t axis[3]; // 12
+		float scale; // 48
+	}; static_assert(sizeof(GfxPackedPlacement) == 52);
+
+	static_assert(sizeof(__int16) == 2);
+
+	struct __declspec(align(4)) GfxStaticModelDrawInst
+	{
+		float cullDist; // 0
+		GfxPackedPlacement placement; // 4
+		XModel* model;	// 56
+		char __pad0[4];	// 60
+		/*
+		unsigned __int16 smodelCacheIndex[4]; // 60
+		unsigned char reflectionProbeIndex; // 62
+		unsigned char primaryLightIndex; // 63
+		unsigned __int16 lightingHandle; // 64
+		unsigned char flags; // 66
+		*/
+	}; static_assert(sizeof(GfxStaticModelDrawInst) == 64);
+
+	struct MaterialMemory
+	{
+		Material* material;
+		int memory;
+	};
+
+	struct GfxWorldDpvsPlanes
+	{
+		int cellCount; // 0
+		cplane_s* planes; // 4
+		unsigned __int16* nodes; // 8 
+		unsigned int* sceneEntCellBits; // 12
+	}; static_assert(sizeof(GfxWorldDpvsPlanes) == 16);
+
+	struct GfxShadowGeometry
+	{
+		unsigned __int16 surfaceCount; // 0
+		unsigned __int16 smodelCount; // 2
+		unsigned __int16* sortedSurfIndex; // 4
+		unsigned __int16* smodelIndex; // 8
+	}; static_assert(sizeof(GfxShadowGeometry) == 12);
+
+	struct GfxLightRegionAxis
+	{
+		float dir[3];
+		float midPoint;
+		float halfSize;
+	};
+
+	struct GfxLightRegionHull
+	{
+		float kdopMidPoint[9]; // 0
+		float kdopHalfSize[9]; // 36
+		unsigned int axisCount; // 72
+		GfxLightRegionAxis* axis; // 76
+	}; static_assert(sizeof(GfxLightRegionHull) == 80);
+
+	struct GfxLightRegion
+	{
+		unsigned int hullCount; // 0
+		GfxLightRegionHull* hulls; // 4
+	}; static_assert(sizeof(GfxLightRegion) == 8);
+
+	struct XModelDrawInfo
+	{
+		unsigned __int16 lod;
+		unsigned __int16 surfId;
+	};
+
+	struct GfxSceneDynModel
+	{
+		XModelDrawInfo info; // 0
+		unsigned __int16 dynEntId; // 4
+	}; static_assert(sizeof(GfxSceneDynModel) == 6);
+
+	struct BModelDrawInfo
+	{
+		unsigned __int16 surfId;
+	};
+
+	struct GfxSceneDynBrush
+	{
+		BModelDrawInfo info;
+		unsigned __int16 dynEntId;
 	};
 
 #pragma pack(push, 4)
@@ -1041,21 +1128,21 @@ namespace game::qos
 		const char* name;			// 0
 		const char* baseName;		// 4
 		int planeCount;				// 8
-		void* planes;				// 12 (pointer is next to count now)
+		GfxWorldDpvsPlanes* planes;	// 12 (pointer is next to count now)
 		int nodeCount;				// 16
 		void* nodes;				// 20 ^
 		int indexCount;				// 24
 		unsigned __int16* indices;	// 28 ^ (is this indices?? idk...)
 		int surfaceCount;			// 32
-		void* surfaces;				// 36 ^
+		void* surfaces;				// 36 ^ (GfxWorldDpvsStatic?)
 		char __pad0[20];			// 40 (unknown between here and 60)
 		int skySurfCount;			// 60
 		int* skyStartSurfs;			// 64
 		GfxImage* skyImage;			// 68
 		char skySamplerState;		// 72 (i think?)
-		const char* skyDomeImage;	// 76 (varXString used, name madeup)
-		unsigned int vertexCount;	// 80
-		GfxWorldVertexData vd;		// 84
+		const char* skyDomeImageName;		// 76 (varXString used, name madeup)
+		unsigned int vertexCount;			// 80
+		GfxWorldVertexData vd;				// 84
 		unsigned int vertexLayerDataSize;	// 92
 		GfxWorldVertexLayerData vld;		// 96
 		char __pad2[128];					// 104
@@ -1064,13 +1151,13 @@ namespace game::qos
 		unsigned int sunPrimaryLightIndex;	// 248
 		unsigned int primaryLightCount;		// 252
 		int __pad3;							// 256
-		int cullGroupCount;					// 260 (shows 0 debugging)
-		unsigned char reflectionProbeCount; // 264
-		unsigned char* reflectionProbes;	// 268
-		void* cullGroups;			// 272 (from GfxWorldDpvsStatic?)
-		int smodelCount;			// 276 ^ (cellCount?)
-		void* smodelDrawInsts;		// 280 ^
-		void* smodelInsts;			// 284 ?
+		int cullGroupCount;						// 260 (shows 0 debugging)
+		unsigned char reflectionProbeCount;		// 264
+		GfxReflectionProbe* reflectionProbes;	// 268
+		void* cullGroups;							// 272 (from GfxWorldDpvsStatic?)
+		int smodelCount;							// 276 ^ (cellCount?)
+		GfxStaticModelDrawInst* smodelDrawInsts;	// 280 ^
+		void* smodelInsts;							// 284 ?
 		int cellBitsCount;			// 288
 		int unk_2;					// 292 (some sort of count variable)
 		void* cells;				// 296
@@ -1083,37 +1170,34 @@ namespace game::qos
 		float maxs[3];				// 380
 		unsigned int checksum;		// 392
 		int materialMemoryCount;	// 396
-		void* materialMemory;		// 400
-		sunflare_t sun;				// 404
+		MaterialMemory* materialMemory;		// 400
+		sunflare_t sun;						// 404
 		float outdoorLookupMatrix[4][4];	// 500
 		GfxImage* outdoorImage;				// 564
-		GfxWorldDpvsDynamic dpvsDyn;		// 568 (maybe??? first two values look decently correct)
 
-		/*
-		void* sceneDynModel;					// 588 (sceneEntCellBits?)
-		void* sceneDynBrush;					// 592
-		unsigned int* primaryLightEntityShadowVis_idk;		// 596
-		unsigned int* primaryLightDynEntShadowVis_idk[2];	// 600
-		char* nonSunPrimaryLightForModelDynEnt;	// 608
-		void* shadowGeom_idk;					// 612
-		*/
+		// dpvsDyn?
+		unsigned int dynEntClientCount[2];		// 568 (572)
+		unsigned int dynEntClientWordCount[2];	// 576 (580)
+		unsigned char* smodelVisData[4];		// 584 (588) (592) (596)
+		unsigned char* surfaceVisData[4];		// 600 (604) (608) (612)
 
 		GfxDrawSurf* surfaceMaterials;			// 616 (confirmed)
 		unsigned int* surfaceCastsSunShadow;	// 620 ^
-		volatile int usageCount;	// 624
-		char __pad6[52];			// 628
-		void* gfxDynEntCellRef;		// 680
-		void* gfxDynEntCellRef2;	// 684
-		void* unk_ptr_0;			// 688
-		void* unk_ptr_1;			// 692
+		unsigned int* cellCasterBits;			// 624
+		unsigned int* cellHasSunLitSurfsBits;	// 628 (var_ubyte? ugh)
+		char __pad6[48];					// 632
+		void* gfxDynEntCellRef;				// 680 (?)
+		void* gfxDynEntCellRef2;			// 684 ^
+		GfxSceneDynModel* sceneDynModel;	// 688
+		GfxSceneDynBrush* sceneDynBrush;	// 692
 		short primaryLightForModelDynEnt;				// 696
-		short unk_short_0;								// 698
+		short idk;										// 698
 		unsigned int* primaryLightEntityShadowVis;		// 700
 		unsigned int* primaryLightDynEntShadowVis[2];	// 704 (708)
-		void* shadowGeom;		// 712
-		int lightRegionCount;	// 716 (maybe???)
-		void* lightRegion;		// 720 ^ idk what this is
-		Material* material_idk;	// 724
+		GfxShadowGeometry* shadowGeom;	// 712
+		int lightRegionCount;			// 716 (maybe, primaryLightCount used for it in IW4???)
+		GfxLightRegion* lightRegion;	// 720 ^ idk what this is
+		Material* material_idk;			// 724
 	}; static_assert(sizeof(GfxWorld) == 728); // 732 -> 728 (4 byte difference from COD4 but structed very differently)
 #pragma pack(pop)
 

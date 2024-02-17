@@ -634,6 +634,47 @@ namespace game::iw4
 		char* dynEntVisData[2][3];
 	};
 
+	struct XModelDrawInfo
+	{
+		unsigned __int16 lod;
+		unsigned __int16 surfId;
+	};
+
+	struct GfxSceneDynModel
+	{
+		XModelDrawInfo info;
+		unsigned __int16 dynEntId;
+	};
+
+	struct GfxLightGridEntry
+	{
+		unsigned __int16 colorsIndex;
+		char primaryLightIndex;
+		char needsTrace;
+	};
+
+	struct GfxLightGridColors
+	{
+		char rgb[56][3];
+	};
+
+	struct GfxLightGrid
+	{
+		char hasLightRegions;
+		unsigned int sunPrimaryLightIndex;
+		unsigned __int16 mins[3];
+		unsigned __int16 maxs[3];
+		unsigned int rowAxis;
+		unsigned int colAxis;
+		unsigned __int16* rowDataStart;
+		unsigned int rawRowDataSize;
+		char* rawRowData;
+		unsigned int entryCount;
+		GfxLightGridEntry* entries;
+		unsigned int colorCount;
+		GfxLightGridColors* colors;
+	};
+
 	struct GfxWorld
 	{
 		const char* name;
@@ -654,30 +695,30 @@ namespace game::iw4
 		GfxCellTree* aabbTrees;
 		GfxCell* cells;
 		GfxWorldDraw draw;
-		// TODO //qos::GfxLightGrid lightGrid;
+		GfxLightGrid lightGrid;
 		int modelCount;
 		GfxBrushModel* models;
 		Bounds bounds;
 		unsigned int checksum;
 		int materialMemoryCount;
 		MaterialMemory* materialMemory;
-		sunflare_t sun;
-		float outdoorLookupMatrix[4][4];
-		GfxImage* outdoorImage;
-		unsigned int* cellCasterBits;
-		unsigned int* cellHasSunLitSurfsBits;
-		// TODO //qos::GfxSceneDynModel* sceneDynModel;
-		// TODO //qos::GfxSceneDynBrush* sceneDynBrush;
-		unsigned int* primaryLightEntityShadowVis;
-		unsigned int* primaryLightDynEntShadowVis[2];
-		char* nonSunPrimaryLightForModelDynEnt;
-		// TODO //qos::GfxShadowGeometry* shadowGeom;
-		// TODO //qos::GfxLightRegion* lightRegion;
-		GfxWorldDpvsStatic dpvs;
-		GfxWorldDpvsDynamic dpvsDyn;
-		unsigned int mapVtxChecksum;
-		unsigned int heroOnlyLightCount;
-		GfxHeroOnlyLight* heroOnlyLights;
+		sunflare_t sun; // 252
+		float outdoorLookupMatrix[4][4]; // 348
+		GfxImage* outdoorImage; // 412
+		unsigned int* cellCasterBits; // 416
+		unsigned int* cellHasSunLitSurfsBits; // 420
+		GfxSceneDynModel* sceneDynModel; // 424
+		// TODO //qos::GfxSceneDynBrush* sceneDynBrush; // 428
+		unsigned int* primaryLightEntityShadowVis; // 432
+		unsigned int* primaryLightDynEntShadowVis[2]; // 436
+		char* nonSunPrimaryLightForModelDynEnt; // 444
+		// TODO //qos::GfxShadowGeometry* shadowGeom; // 448
+		// TODO //qos::GfxLightRegion* lightRegion; // 452
+		GfxWorldDpvsStatic dpvs; // 456
+		GfxWorldDpvsDynamic dpvsDyn; // 564
+		unsigned int mapVtxChecksum; // 612
+		unsigned int heroOnlyLightCount; // 616
+		GfxHeroOnlyLight* heroOnlyLights; // 620
 		char fogTypesAllowed;
 	};
 #pragma pack(pop)

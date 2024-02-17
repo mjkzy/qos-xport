@@ -46,9 +46,12 @@ namespace gfxworld
 			iw4_asset.lastSunPrimaryLightIndex = world->sunPrimaryLightIndex;
 			iw4_asset.primaryLightCount = world->primaryLightCount;
 
-			// not found on QoS?
-			//iw4_asset.dpvsPlanes = world->dpvsPlanes;
-			//iw4_asset.dpvsDyn = world->dpvsDyn;
+			// dpvsPlanes
+			auto dpvsPlanes = *world->planes;
+			iw4_asset.dpvsPlanes.cellCount = dpvsPlanes.cellCount;
+			memcpy(iw4_asset.dpvsPlanes.planes, dpvsPlanes.planes, 4);
+			memcpy(iw4_asset.dpvsPlanes.nodes, dpvsPlanes.nodes, 4);
+			memcpy(iw4_asset.dpvsPlanes.sceneEntCellBits, dpvsPlanes.sceneEntCellBits, 4);
 
 			iw4_asset.dpvs.surfaceMaterials = utils::memory::allocate_array<game::iw4::GfxDrawSurf>(world->surfaceCount);
 			for (auto i = 0; i < world->surfaceCount; i++)
@@ -65,7 +68,10 @@ namespace gfxworld
 			}
 
 			iw4_asset.dpvs.surfaceCastsSunShadow = world->surfaceCastsSunShadow;
-			iw4_asset.dpvs.usageCount = world->usageCount;
+			//iw4_asset.dpvs.usageCount = world->usageCount;
+
+			// dpvsDyn
+			//iw4_asset.dpvsDyn
 
 			auto iw4_asset_output = utils::memory::allocate<game::iw4::GfxWorld>();
 			*iw4_asset_output = iw4_asset;
