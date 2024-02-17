@@ -53,11 +53,11 @@ namespace mapents
 			{
 				scheduler::once([&]()
 					{
-						command::add("dumpMapEnts", [](const command::params& params)
+						command::add("dumpmapents", [](const command::params& params)
 						{
 							if (params.size() < 2)
 							{
-								console::info("USAGE: dumpMapEnts <name>\n");
+								console::info("USAGE: dumpmapents <name>\n");
 								return;
 							}
 
@@ -66,7 +66,7 @@ namespace mapents
 							auto header = game::DB_FindXAssetHeader(game::qos::ASSET_TYPE_CLIPMAP_MP, name);
 							if (!header.clipMap->mapEnts)
 							{
-								console::error("dumpMapEnts failed on '%s'\n", name);
+								console::error("dumpmapents failed on '%s'\n", name);
 								return;
 							}
 

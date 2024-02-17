@@ -48,20 +48,22 @@ namespace material
 			// Set them all to -1 so they're not used if they dont exist in iw3
 			std::memset(iw4_asset->stateBitsEntry, 0xFF, sizeof(iw4_asset->stateBitsEntry));
 
-			//// copy techniques to correct spots
-			//for (size_t i = 0; i < game::iw4::TECHNIQUE_COUNT; i++)
-			//{
-			//	game::iw4::MaterialTechniqueType technique = static_cast<game::iw4::MaterialTechniqueType>(i);
-			//	if (IMaterialTechniqueSet::techniqueTypeTableFromIW4.contains(technique))
-			//	{
-			//		iw4_asset->stateBitsEntry[technique] = material->stateBitsEntry[IMaterialTechniqueSet::techniqueTypeTableFromIW4.at(technique)];
-			//	}
-			//	else
-			//	{
-			//		// Not necessary
-			//		//iw4_asset->stateBitsEntry[technique] = 0xFF;
-			//	}
-			//}
+			// copy techniques to correct spots
+			/*
+			for (size_t i = 0; i < game::iw4::TECHNIQUE_COUNT; i++)
+			{
+				game::iw4::MaterialTechniqueType technique = static_cast<game::iw4::MaterialTechniqueType>(i);
+				if (IMaterialTechniqueSet::techniqueTypeTableFromIW4.contains(technique))
+				{
+					iw4_asset->stateBitsEntry[technique] = material->stateBitsEntry[IMaterialTechniqueSet::techniqueTypeTableFromIW4.at(technique)];
+				}
+				else
+				{
+					// Not necessary
+					iw4_asset->stateBitsEntry[technique] = 0xFF;
+				}
+			}
+			*/
 
 			iw4_asset->textureCount = material->textureCount;
 			iw4_asset->constantCount = material->constantCount;
@@ -86,7 +88,6 @@ namespace material
 
 			//iw4_asset->techniqueSet = AssetHandler::Convert(Game::IW3::XAssetType::ASSET_TYPE_TECHNIQUE_SET, { material->techniqueSet }).techniqueSet;
 
-
 			iw4_asset->textureTable = utils::memory::allocate_array<game::iw4::MaterialTextureDef>(iw4_asset->textureCount);
 			for (char i = 0; i < iw4_asset->textureCount; i++)
 			{
@@ -109,13 +110,13 @@ namespace material
 			}
 
 			iw4_asset->constantTable = nullptr;
-			if (material->contantTable)
+			if (material->constantTable)
 			{
 				iw4_asset->constantTable = utils::memory::allocate_array<game::qos::MaterialConstantDef>(material->constantCount);
 
 				for (char i = 0; i < material->constantCount; ++i)
 				{
-					game::qos::MaterialConstantDef* constantDef = &material->contantTable[i];
+					game::qos::MaterialConstantDef* constantDef = &material->constantTable[i];
 					game::qos::MaterialConstantDef* targetDef = &iw4_asset->constantTable[i];
 
 					std::memcpy(targetDef, constantDef, sizeof(game::qos::MaterialConstantDef));
@@ -135,7 +136,7 @@ namespace material
 				}
 			}
 
-			iw4_asset->stateBitTable = material->stateBitsTable;
+			iw4_asset->stateBitTable = material->stateBitTable;
 
 			return { iw4_asset };
 		}

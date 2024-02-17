@@ -773,6 +773,21 @@ namespace game::iw4
 		Bounds bounds;
 	};
 
+	struct XSurfaceVertexInfo
+	{
+		short vertCount[4];
+		unsigned short* vertsBlend;
+	};
+
+	struct XRigidVertList
+	{
+		unsigned short boneOffset;
+		unsigned short vertCount;
+		unsigned short triOffset;
+		unsigned short triCount;
+		void* collisionTree;
+	};
+
 	struct XSurface
 	{
 		unsigned char tileMode;
@@ -783,10 +798,10 @@ namespace game::iw4
 		unsigned __int16 baseTriIndex;
 		unsigned __int16 baseVertIndex;
 		unsigned __int16* triIndices;
-		// TODO //qos::XSurfaceVertexInfo vertInfo;
-		// TODO //qos::GfxPackedVertex* verts0;
+		XSurfaceVertexInfo vertInfo;
+		qos::GfxPackedVertex* verts0;
 		unsigned int vertListCount;
-		// TODO //qos::XRigidVertList* vertList;
+		XRigidVertList* vertList;
 		int partBits[6];
 	};
 
