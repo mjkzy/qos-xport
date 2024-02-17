@@ -658,14 +658,12 @@ namespace game::qos
 		char stateBitsCount; // 69
 		StateFlags stateFlags; // 70
 		char cameraRegion; // 71
-
 		char __pad1[12]; // 72
-
 		MaterialTechniqueSet* techniqueSet; // 84
 		MaterialTextureDef* textureTable; // 88
 		qos::MaterialConstantDef* constantTable; // 92
 		qos::GfxStateBits* stateBitTable; // 96
-	}; static_assert(sizeof(Material) == 0x68);
+	}; static_assert(sizeof(Material) == 104);
 
 	struct FxSpawnDefLooping
 	{
@@ -1029,6 +1027,14 @@ namespace game::qos
 		unsigned __int16 surfaceCountNoDecal;
 	};
 
+	struct GfxWorldDpvsDynamic
+	{
+		unsigned int dynEntClientWordCount[2];
+		unsigned int dynEntClientCount[2];
+		unsigned int* dynEntCellBits[2];
+		char* dynEntVisData[2][3];
+	};
+
 #pragma pack(push, 4)
 	struct GfxWorld // slightly different than IW3
 	{
@@ -1079,20 +1085,23 @@ namespace game::qos
 		int materialMemoryCount;	// 396
 		void* materialMemory;		// 400
 		sunflare_t sun;				// 404
-		float outdoorLookupMatrix[4][4];		// 500
-		GfxImage* outdoorImage;					// 564
-		unsigned int dynEntClientCount[2];		// 568 (572)
-		unsigned int* dynEntCellBits[2];		// 576 (bad data?)
-		unsigned int* cellCasterBits;			// 584
+		float outdoorLookupMatrix[4][4];	// 500
+		GfxImage* outdoorImage;				// 564
+		GfxWorldDpvsDynamic dpvsDyn;		// 568 (maybe??? first two values look decently correct)
+
+		/*
 		void* sceneDynModel;					// 588 (sceneEntCellBits?)
 		void* sceneDynBrush;					// 592
-		void* primaryLightEntityShadowVis_idk;				// 596
+		unsigned int* primaryLightEntityShadowVis_idk;		// 596
 		unsigned int* primaryLightDynEntShadowVis_idk[2];	// 600
 		char* nonSunPrimaryLightForModelDynEnt;	// 608
 		void* shadowGeom_idk;					// 612
-		void* surfaceMaterials;					// 616 (confirmed)
+		*/
+
+		GfxDrawSurf* surfaceMaterials;			// 616 (confirmed)
 		unsigned int* surfaceCastsSunShadow;	// 620 ^
-		char __pad6[56];			// 624
+		volatile int usageCount;	// 624
+		char __pad6[52];			// 628
 		void* gfxDynEntCellRef;		// 680
 		void* gfxDynEntCellRef2;	// 684
 		void* unk_ptr_0;			// 688

@@ -48,6 +48,24 @@ namespace gfxworld
 
 			// not found on QoS?
 			//iw4_asset.dpvsPlanes = world->dpvsPlanes;
+			//iw4_asset.dpvsDyn = world->dpvsDyn;
+
+			iw4_asset.dpvs.surfaceMaterials = utils::memory::allocate_array<game::iw4::GfxDrawSurf>(world->surfaceCount);
+			for (auto i = 0; i < world->surfaceCount; i++)
+			{
+				iw4_asset.dpvs.surfaceMaterials[i].fields.objectId = world->surfaceMaterials[i].fields.objectId;
+				iw4_asset.dpvs.surfaceMaterials[i].fields.reflectionProbeIndex = world->surfaceMaterials[i].fields.reflectionProbeIndex;
+				iw4_asset.dpvs.surfaceMaterials[i].fields.customIndex = world->surfaceMaterials[i].fields.customIndex;
+				iw4_asset.dpvs.surfaceMaterials[i].fields.materialSortedIndex = world->surfaceMaterials[i].fields.materialSortedIndex;
+				iw4_asset.dpvs.surfaceMaterials[i].fields.prepass = world->surfaceMaterials[i].fields.prepass;
+				iw4_asset.dpvs.surfaceMaterials[i].fields.sceneLightIndex = world->surfaceMaterials[i].fields.primaryLightIndex;
+				iw4_asset.dpvs.surfaceMaterials[i].fields.surfType = world->surfaceMaterials[i].fields.surfType;
+				iw4_asset.dpvs.surfaceMaterials[i].fields.primarySortKey = world->surfaceMaterials[i].fields.primarySortKey;
+				iw4_asset.dpvs.surfaceMaterials[i].fields.unused = world->surfaceMaterials[i].fields.unused;
+			}
+
+			iw4_asset.dpvs.surfaceCastsSunShadow = world->surfaceCastsSunShadow;
+			iw4_asset.dpvs.usageCount = world->usageCount;
 
 			auto iw4_asset_output = utils::memory::allocate<game::iw4::GfxWorld>();
 			*iw4_asset_output = iw4_asset;

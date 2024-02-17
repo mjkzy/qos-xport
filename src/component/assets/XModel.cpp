@@ -265,9 +265,9 @@ namespace xmodel
 					// The error may lie in the above codeblock, or in zonebuilder's reading of physcollmaps.
 					iw4_asset->physCollmap = nullptr;
 				}
-
-				return { iw4_asset };
 			}
+
+			return { iw4_asset };
 		}
 	}
 

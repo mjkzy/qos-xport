@@ -626,6 +626,14 @@ namespace game::iw4
 		unsigned int* sceneEntCellBits; // 12
 	}; static_assert(sizeof(GfxWorldDpvsPlanes) == 16);
 
+	struct GfxWorldDpvsDynamic
+	{
+		unsigned int dynEntClientWordCount[2];
+		unsigned int dynEntClientCount[2];
+		unsigned int* dynEntCellBits[2];
+		char* dynEntVisData[2][3];
+	};
+
 	struct GfxWorld
 	{
 		const char* name;
@@ -666,7 +674,7 @@ namespace game::iw4
 		// TODO //qos::GfxShadowGeometry* shadowGeom;
 		// TODO //qos::GfxLightRegion* lightRegion;
 		GfxWorldDpvsStatic dpvs;
-		// TODO //qos::GfxWorldDpvsDynamic dpvsDyn;
+		GfxWorldDpvsDynamic dpvsDyn;
 		unsigned int mapVtxChecksum;
 		unsigned int heroOnlyLightCount;
 		GfxHeroOnlyLight* heroOnlyLights;
