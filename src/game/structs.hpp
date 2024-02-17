@@ -1105,9 +1105,7 @@ namespace game::qos
 		int lightRegionCount;	// 716 (maybe???)
 		void* lightRegion;		// 720 ^ idk what this is
 		Material* material_idk;	// 724
-	}; 
-	static_assert(sizeof(GfxWorld) == 728); // 732 -> 728 (4 byte difference from COD4..)
-	static_assert(offsetof(GfxWorld, sunLight) == 232);
+	}; static_assert(sizeof(GfxWorld) == 728); // 732 -> 728 (4 byte difference from COD4 but structed very differently)
 #pragma pack(pop)
 
 	union XAssetHeader
