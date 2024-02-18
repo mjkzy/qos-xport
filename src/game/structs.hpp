@@ -1122,6 +1122,96 @@ namespace game::qos
 		unsigned __int16 dynEntId;
 	};
 
+	struct GfxSurface
+	{
+		game::iw4::srfTriangles_t tris;
+		Material* material;
+		unsigned char lightmapIndex;
+		unsigned char reflectionProbeIndex;
+		unsigned char primaryLightIndex;
+		unsigned char flags;
+		float bounds[2][3];
+	};
+
+	struct GfxAabbTree;
+
+	struct GfxAabbTreeChildren
+	{
+		GfxAabbTree child;
+	};
+
+	struct GfxAabbTree
+	{
+		float mins[3]; // 0
+		float maxs[3]; // 12
+		unsigned __int16 childCount; // 24
+		unsigned __int16 surfaceCount; // 26
+		unsigned __int16 startSurfIndex; // 28
+		unsigned __int16 surfaceCountNoDecal; // 30
+		unsigned __int16 startSurfIndexNoDecal; // 32
+		unsigned __int16 smodelIndexCount; // 34
+		unsigned __int16* smodelIndexes; // 36
+		int childrenOffset; // 40 (aabbTreeChildrenCount)
+		GfxAabbTreeChildren* gfxAabbTreeChildren; // 44
+	}; static_assert(sizeof(GfxAabbTree) == 48);
+
+	struct GfxPortal;
+
+	struct GfxPortalWritable
+	{
+		char isQueued;
+		char isAncestor;
+		char recursionDepth;
+		char hullPointCount;
+		float(*hullPoints)[2];
+		GfxPortal* queuedParent;
+	};
+
+	struct DpvsPlane
+	{
+		float coeffs[4];
+		char side[3];
+		char pad;
+	};
+
+	struct GfxCell;
+
+	struct GfxPortal
+	{
+		GfxPortalWritable writable;
+		DpvsPlane plane;
+		GfxCell* cell;
+		float(*vertices)[3];
+		char vertexCount;
+		float hullAxis[2][3];
+	};
+
+#pragma pack(push, 4)
+	struct GfxCell
+	{
+		float mins[3]; // 0
+		float maxs[3]; // 12
+		GfxAabbTree* aabbTree; // 24 (just one)
+		int portalCount; // 28
+		GfxPortal* portals; // 32
+		int cullGroupCount; // 36
+		int* cullGroups; // 40
+		unsigned char reflectionProbeCount; // 44
+		unsigned char* reflectionProbes; // 48
+
+		/*
+		int aabbTreeCount; // 24
+		GfxAabbTree* aabbTree; // 28
+		int portalCount; // 32
+		GfxPortal* portals; // 36
+		int cullGroupCount; // 40
+		int* cullGroups; // 44
+		unsigned char reflectionProbeCount; // 48
+		unsigned char* reflectionProbes; // 49
+		*/
+	}; static_assert(sizeof(GfxCell) == 52); // 56 in COD4
+#pragma pack(pop)
+
 #pragma pack(push, 4)
 	struct GfxWorld // slightly different than IW3
 	{
@@ -1134,7 +1224,7 @@ namespace game::qos
 		int indexCount;				// 24
 		unsigned __int16* indices;	// 28 ^ (is this indices?? idk...)
 		int surfaceCount;			// 32
-		void* surfaces;				// 36 ^ (GfxWorldDpvsStatic?)
+		game::iw4::GfxSurface* surfaces;	// 36 ^ (GfxWorldDpvsStatic?)
 		char __pad0[20];			// 40 (unknown between here and 60)
 		int skySurfCount;			// 60
 		int* skyStartSurfs;			// 64
@@ -1160,7 +1250,7 @@ namespace game::qos
 		void* smodelInsts;							// 284 ?
 		int cellBitsCount;			// 288
 		int unk_2;					// 292 (some sort of count variable)
-		void* cells;				// 296
+		GfxCell* cells;				// 296
 		int lightmapCount;			// 300
 		GfxLightmapArray* lightmaps;// 304
 		GfxLightGrid lightGrid;		// 308
