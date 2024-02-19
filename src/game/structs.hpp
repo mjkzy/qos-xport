@@ -70,8 +70,6 @@ namespace game::qos
 	};
 
 #pragma region clipmap
-
-
 #pragma pack(push, 4)
 	struct cLeaf_t
 	{
@@ -102,8 +100,7 @@ namespace game::qos
 		const char* name;
 		char* entityString;
 		int numEntityChars; // The structure actually ends here...
-	};
-	static_assert(sizeof(MapEnts) == 0xC);
+	}; static_assert(sizeof(MapEnts) == 0xC);
 
 	struct clipMap_t
 	{
@@ -123,8 +120,7 @@ namespace game::qos
 		char pad_009C[24]; //0x009C
 		MapEnts* mapEnts; //0xB4
 		char pad_00B8[140]; //0x00B8
-	};
-	static_assert(sizeof(clipMap_t) == 0x144);
+	}; static_assert(sizeof(clipMap_t) == 0x144);
 #pragma endregion
 
 	struct GfxImageFileHeader
@@ -204,12 +200,107 @@ namespace game::qos
 		float transWeight;
 	};
 
-	struct XSurface
+	struct XSurfaceVertexInfo
 	{
-		char _pad0[80];
+		short vertCount[4]; // 0
+		unsigned short* vertsBlend; // 8
+		float idk; // 12 (not sure what this is here)
+	}; static_assert(sizeof(XSurfaceVertexInfo) == 16); // PLF confirms this
+
+	union PackedTexCoords
+	{
+		unsigned int packed;
 	};
 
-	static_assert(sizeof(XSurface) == 0x50);
+	union GfxColor
+	{
+		unsigned int packed;
+		unsigned char array[4];
+	};
+
+	union PackedUnitVec
+	{
+		unsigned int packed;
+		char array[4];
+	};
+
+	struct GfxPackedVertex
+	{
+		float xyz[3];
+		float binormalSign;
+		GfxColor color;
+		PackedTexCoords texCoord;
+		PackedUnitVec normal;
+		PackedUnitVec tangent;
+	};
+
+	struct XSurfaceCollisionAabb
+	{
+		unsigned short mins[3];
+		unsigned short maxs[3];
+	};
+
+	struct XSurfaceCollisionNode
+	{
+		XSurfaceCollisionAabb aabb;
+		unsigned short childBeginIndex;
+		unsigned short childCount;
+	};
+
+	struct XSurfaceCollisionLeaf
+	{
+		unsigned short triangleBeginIndex;
+	};
+
+	struct XSurfaceCollisionTree
+	{
+		float trans[3];
+		float scale[3];
+		unsigned int nodeCount;
+		XSurfaceCollisionNode* nodes;
+		unsigned int leafCount;
+		XSurfaceCollisionLeaf* leafs;
+	};
+
+	struct XRigidVertList
+	{
+		unsigned short boneOffset; // 0
+		unsigned short vertCount; // 2
+		unsigned short triOffset; // 4
+		unsigned short triCount; // 6
+		XSurfaceCollisionTree* collisionTree; // 8
+		void* unk; // 12 (not sure if its even here, but idk?)
+	}; static_assert(sizeof(XRigidVertList) == 16);
+
+	static_assert(sizeof(unsigned char) == 1);
+	static_assert(sizeof(unsigned short) == 2);
+
+	struct XSurface
+	{
+		unsigned char tileMode; // 0
+		bool deformed; // 1
+		unsigned short vertCount; // 2
+		unsigned short triCount; // 4
+		//char zoneHandle; // 6
+		unsigned short baseTriIndex; // 6
+		//unsigned short baseVertIndex; // 7
+		unsigned short* triIndices; // 8
+
+		XSurfaceVertexInfo vertInfo; // 12
+		GfxPackedVertex* verts0; // 28
+		unsigned int vertListCount; // 32
+		XRigidVertList* vertList; // 36 (varGfxPackedVertex3)
+		int partBits[4];	// 40
+		char __pad0[24];	// 56
+
+		/*
+		int vertexBufferCount;	// 44 (guessed names)
+		void* vertexBuffer;		// 48 ^
+		void* indexBuffer;	// 52
+		*/
+	}; 
+	static_assert(sizeof(XSurface) == 80); // 0x50
+	static_assert(offsetof(XSurface, partBits) == 40);
 
 	struct XModelCollTri_s
 	{
@@ -314,43 +405,42 @@ namespace game::qos
 
 	struct Material;
 
-
-#pragma pack(push, 4)
 	struct XModel
 	{
-		const char* name;
-		char numBones;
-		char numRootBones;
-		char numsurfs;
-		unsigned __int16* boneNames;
-		unsigned char* parentList;
-		__int16* quats;
-		float* trans;
-		unsigned char* partClassification;
-		DObjAnimMat* baseMat;
-		XSurface* surfs;
-		Material** materialHandles;
-		XModelLodInfo lodInfo[4]; //char _pad0[128];
-		XModelCollSurf_s* collSurfs;
-		int numCollSurfs;
-		int contents;
-		XBoneInfo* boneInfo; //0xB4
-		float radius; //char _pad2[48];
-		float mins[3];
-		float maxs[3];
-		__int16 numLods;
-		__int16 collLod;
-		void* streamInfo;
-		int memUsage;
-		char flags;
-		bool bad;
-		void* _pad2;
-		PhysPreset* physPreset;
-		PhysGeomList* physGeoms;
-	};
-#pragma pack(pop)
+		const char* name; // 0
+		char numBones; // 4
+		char numRootBones; // 5
+		unsigned char numsurfs; //  6
+		char lodRampType; // 7
+		unsigned __int16* boneNames; // 8
+		unsigned char* parentList; // 12
+		__int16* quats; // 16
+		float* trans; // 20
+		unsigned char* partClassification; // 24
+		DObjAnimMat* baseMat; // 28
+		XSurface* surfs; // 32
+		Material** materialHandles; // 36
+		XModelLodInfo lodInfo[4]; // 40
+		XModelCollSurf_s* collSurfs; // 168
+		int numCollSurfs; // 172
+		int contents; // 176
+		XBoneInfo* boneInfo; // 180
+		float radius; // 184
 
-	static_assert(sizeof(XModel) == 0xF0);
+		// idk
+		float mins[3]; // 188
+		float maxs[3]; // 200
+		short numLods; // 212
+		short collLod; // 214
+		void* streamInfo; // 216
+		int memUsage; // 220
+		char flags; // 224
+		bool bad; // 225
+		short __pad0; // 226
+		PhysPreset* physPreset; // 228
+		PhysGeomList* physGeoms; // 232
+		void* physConstraints; // 236
+	}; static_assert(sizeof(XModel) == 240);
 
 	struct GfxDrawSurfFields
 	{
@@ -370,37 +460,6 @@ namespace game::qos
 		GfxDrawSurfFields fields;
 		unsigned __int64 packed;
 	};
-
-	struct MaterialGameFlagsFields
-	{
-		unsigned char unk1 : 1; // 0x1
-		unsigned char addShadowToPrimaryLight : 1; // 0x2
-		unsigned char isFoliageRequiresGroundLighting : 1; // 0x4
-		unsigned char unk4 : 1; // 0x8
-		unsigned char unk5 : 1; // 0x10
-		unsigned char unk6 : 1; // 0x20
-		unsigned char MTL_GAMEFLAG_CASTS_SHADOW : 1; // 0x40
-		unsigned char unkNeededForSModelDisplay : 1; // 0x80
-	};
-
-	union MaterialGameFlags
-	{
-		MaterialGameFlagsFields fields;
-		unsigned char packed;
-	};
-
-	struct MaterialInfo
-	{
-		const char* name;
-		MaterialGameFlags gameFlags;
-		char sortKey;
-		char textureAtlasRowCount;
-		char textureAtlasColumnCount;
-		GfxDrawSurf drawSurf;
-		unsigned int surfaceTypeBits;
-		unsigned __int16 hashIndex;
-	};
-	static_assert(sizeof(MaterialInfo) == 0x18);
 
 	struct MaterialArgumentCodeConst
 	{
@@ -455,13 +514,13 @@ namespace game::qos
 
 	struct MaterialTextureDef
 	{
-		unsigned int typeHash;
-		char firstCharacter;
-		char secondLastCharacter;
-		char sampleState;
-		char semantic;
-		GfxImage* image;
-	};
+		unsigned int typeHash; // 0
+		char firstCharacter; // 4
+		char secondLastCharacter; // 5
+		char sampleState; // 6
+		char semantic; // 7
+		GfxImage* image; // 8
+	}; static_assert(sizeof(MaterialTextureDef) == 12);
 
 	struct MaterialConstantDef
 	{
@@ -546,21 +605,64 @@ namespace game::qos
 		int loadBits[2];
 	};
 
+	struct MaterialGameFlagsFields
+	{
+		unsigned char unk1 : 1; // 0x1
+		unsigned char addShadowToPrimaryLight : 1; // 0x2
+		unsigned char isFoliageRequiresGroundLighting : 1; // 0x4
+		unsigned char unk4 : 1; // 0x8
+		unsigned char unk5 : 1; // 0x10
+		unsigned char unk6 : 1; // 0x20
+		unsigned char MTL_GAMEFLAG_CASTS_SHADOW : 1; // 0x40
+		unsigned char unkNeededForSModelDisplay : 1; // 0x80
+	};
+
+	union MaterialGameFlags
+	{
+		MaterialGameFlagsFields fields;
+		unsigned char packed;
+	};
+
+	struct MaterialInfo
+	{
+		const char* name; // 0
+		MaterialGameFlags gameFlags; // 4
+		char sortKey; // 5
+		char textureAtlasRowCount; // 6
+		char textureAtlasColumnCount; // 7
+		GfxDrawSurf drawSurf; // 8
+		unsigned int surfaceTypeBits; // 16
+		unsigned __int16 hashIndex; // 20
+	}; static_assert(sizeof(MaterialInfo) == 24);
+
+	enum StateFlags : unsigned char 
+	{
+		STATE_FLAG_CULL_BACK = 0x1,
+		STATE_FLAG_CULL_FRONT = 0x2,
+		STATE_FLAG_DECAL = 0x4,
+		STATE_FLAG_WRITES_DEPTH = 0x8,
+		STATE_FLAG_USES_DEPTH_BUFFER = 0x10,
+		STATE_FLAG_USES_STENCIL_BUFFER = 0x20,
+		STATE_FLAG_CULL_BACK_SHADOW = 0x40,
+		STATE_FLAG_CULL_FRONT_SHADOW = 0x80
+	};
+
 	struct Material
 	{
-		MaterialInfo info;
-		char stateBitsEntry[55];
-		char textureCount;
-		char constantCount;
-		char stateBitsCount;
-		char stateFlags;
-		char cameraRegion;
-		MaterialTechniqueSet* techniqueSet; //0x54
-		MaterialTextureDef* textureTable;
-		MaterialConstantDef* contantTable;
-		GfxStateBits* stateBitsTable;
-	};
-	static_assert(sizeof(Material) == 0x68);
+		MaterialInfo info; // 0
+		char __pad0[8]; // 24 (rest of MaterialInfo?)
+		char stateBitsEntry[35]; // 32
+		char textureCount; // 67
+		char constantCount; // 68
+		char stateBitsCount; // 69
+		StateFlags stateFlags; // 70
+		char cameraRegion; // 71
+		char __pad1[12]; // 72
+		MaterialTechniqueSet* techniqueSet; // 84
+		MaterialTextureDef* textureTable; // 88
+		qos::MaterialConstantDef* constantTable; // 92
+		qos::GfxStateBits* stateBitTable; // 96
+	}; static_assert(sizeof(Material) == 104);
 
 	struct FxSpawnDefLooping
 	{
@@ -797,29 +899,397 @@ namespace game::qos
 		//void* g_glassData; // 4
 	}; static_assert(sizeof(gameWorldMp) == 4);
 
+	struct GfxWorldStreamInfo
+	{
+		int aabbTreeCount; // 0
+		// 			GfxStreamingAabbTree *aabbTrees;
+		// 			int leafRefCount;
+		// 			int *leafRefs;
+	};
 
-	// slightly different than IW3
-	//struct GfxWorld
-	//{
-	//	const char* name;			// 0
-	//	const char* baseName;		// 4
-	//	int planeCount;				// 8
-	//	void* planes;				// 12 (pointer is next to count now)
-	//	int nodeCount;				// 16
-	//	void* nodes;				// 20 ^
-	//	int indexCount;				// 24
-	//	unsigned __int16* indices;	// 28 ^
-	//	int surfaceCount;			// 32
-	//	void* surfaces;				// 36 ^
-	//	char __pad0[20];			// 40 (unresearched)
-	//	int skySurfCount;			// 60
-	//	int* skyStartSurfs;			// 64
-	//	GfxImage* skyImage;			// 68
-	//	char __pad1[4];				// 72 (unresearched)
-	//	const char* unk;			// 76 (varXString used)
+	struct GfxWorldVertex
+	{
+		float xyz[3];
+		float binormalSign;
+		GfxColor color;
+		float texCoord[2];
+		float lmapCoord[2];
+		PackedUnitVec normal;
+		PackedUnitVec tangent;
+	};
 
-	//	// TODO
-	//}; static_assert(sizeof(GfxWorld) == 728, "GfxWorld is the wrong size"); // 732 -> 728 (4 byte difference from COD4..)
+	struct GfxWorldVertexData
+	{
+		GfxWorldVertex* vertices;
+		void/*IDirect3DVertexBuffer9*/* worldVb;
+	};
+
+	struct GfxWorldVertexLayerData
+	{
+		char* data;
+		void/*IDirect3DVertexBuffer9*/* layerVb;
+	};
+
+#pragma pack(push, 4)
+	struct sunflare_t
+	{
+		char hasValidData; // 0
+		Material* spriteMaterial; // 4
+		Material* flareMaterial; // 8
+		float spriteSize; // 12
+		float flareMinSize;
+		float flareMinDot;
+		float flareMaxSize;
+		float flareMaxDot;
+		float flareMaxAlpha;
+		int flareFadeInTime;
+		int flareFadeOutTime;
+		float blindMinDot;
+		float blindMaxDot;
+		float blindMaxDarken;
+		int blindFadeInTime;
+		int blindFadeOutTime;
+		float glareMinDot;
+		float glareMaxDot;
+		float glareMaxLighten;
+		int glareFadeInTime;
+		int glareFadeOutTime;
+		float sunFxPosition[3];
+	};
+#pragma pack(pop)
+
+	struct __declspec(align(4)) GfxLightImage
+	{
+		GfxImage* image;
+		char samplerState;
+	};
+
+	struct GfxLightDef
+	{
+		const char* name;
+		GfxLightImage attenuation;
+		int lmapLookupStart;
+	};
+
+	struct GfxLight
+	{
+		char type; // 0
+		char canUseShadowMap; // 1
+		char unused[2]; // 2
+		float color[3]; // 4
+		float dir[3]; // 16
+		float origin[3]; // 28
+		float radius; // 40
+		float cosHalfFovOuter; // 44
+		float cosHalfFovInner; // 48
+		int exponent; // 52
+		unsigned int spotShadowIndex; // 56
+		int unk; // 60
+		GfxLightDef* def; // 64
+	}; static_assert(sizeof(GfxLight) == 68);
+
+	struct GfxLightmapArray
+	{
+		GfxImage* primary; // 0
+		GfxImage* secondary; // 4
+	}; static_assert(sizeof(GfxLightmapArray) == 8);
+
+	struct GfxLightGrid
+	{
+		//char hasLightRegions; // 0
+		unsigned int sunPrimaryLightIndex; // 0
+		unsigned __int16 mins[3]; // 4
+		unsigned __int16 maxs[3]; // 10
+		unsigned int rowAxis; // 16
+		unsigned int colAxis; // 20
+		unsigned __int16* rowDataStart; // 24
+		unsigned int rawRowDataSize; // 28
+		char* rawRowData; // 32
+		unsigned int entryCount; // 36
+		void* entries; // 40
+		unsigned int colorCount; // 44
+		void* colors; // 48
+	}; static_assert(sizeof(GfxLightGrid) == 52); // PLF claims it's 56, but that could literally just be Wii version
+
+	struct GfxBrushModelWritable
+	{
+		float mins[3];
+		float maxs[3];
+	};
+
+	struct __declspec(align(4)) GfxBrushModel
+	{
+		GfxBrushModelWritable writable; // 0
+		float bounds[2][3]; // 24
+		unsigned __int16 surfaceCount; // 48
+		unsigned __int16 startSurfIndex;
+		unsigned __int16 surfaceCountNoDecal;
+	};
+
+	struct GfxReflectionProbe
+	{
+		float origin[3]; // 0
+		GfxImage* reflectionImage; // 12
+	}; static_assert(sizeof(GfxReflectionProbe) == 16);
+
+	struct GfxPackedPlacement
+	{
+		float origin[3]; // 0
+		vec3_t axis[3]; // 12
+		float scale; // 48
+	}; static_assert(sizeof(GfxPackedPlacement) == 52);
+
+	static_assert(sizeof(__int16) == 2);
+
+	struct __declspec(align(4)) GfxStaticModelDrawInst
+	{
+		float cullDist; // 0
+		GfxPackedPlacement placement; // 4
+		XModel* model;	// 56
+		char __pad0[4];	// 60
+		/*
+		unsigned __int16 smodelCacheIndex[4]; // 60
+		unsigned char reflectionProbeIndex; // 62
+		unsigned char primaryLightIndex; // 63
+		unsigned __int16 lightingHandle; // 64
+		unsigned char flags; // 66
+		*/
+	}; static_assert(sizeof(GfxStaticModelDrawInst) == 64);
+
+	struct MaterialMemory
+	{
+		Material* material;
+		int memory;
+	};
+
+	struct GfxWorldDpvsPlanes
+	{
+		int cellCount; // 0
+		cplane_s* planes; // 4
+		unsigned __int16* nodes; // 8 
+		unsigned int* sceneEntCellBits; // 12
+	}; static_assert(sizeof(GfxWorldDpvsPlanes) == 16);
+
+	struct GfxShadowGeometry
+	{
+		unsigned __int16 surfaceCount; // 0
+		unsigned __int16 smodelCount; // 2
+		unsigned __int16* sortedSurfIndex; // 4
+		unsigned __int16* smodelIndex; // 8
+	}; static_assert(sizeof(GfxShadowGeometry) == 12);
+
+	struct GfxLightRegionAxis
+	{
+		float dir[3];
+		float midPoint;
+		float halfSize;
+	};
+
+	struct GfxLightRegionHull
+	{
+		float kdopMidPoint[9]; // 0
+		float kdopHalfSize[9]; // 36
+		unsigned int axisCount; // 72
+		GfxLightRegionAxis* axis; // 76
+	}; static_assert(sizeof(GfxLightRegionHull) == 80);
+
+	struct GfxLightRegion
+	{
+		unsigned int hullCount; // 0
+		GfxLightRegionHull* hulls; // 4
+	}; static_assert(sizeof(GfxLightRegion) == 8);
+
+	struct XModelDrawInfo
+	{
+		unsigned __int16 lod;
+		unsigned __int16 surfId;
+	};
+
+	struct GfxSceneDynModel
+	{
+		XModelDrawInfo info; // 0
+		unsigned __int16 dynEntId; // 4
+	}; static_assert(sizeof(GfxSceneDynModel) == 6);
+
+	struct BModelDrawInfo
+	{
+		unsigned __int16 surfId;
+	};
+
+	struct GfxSceneDynBrush
+	{
+		BModelDrawInfo info;
+		unsigned __int16 dynEntId;
+	};
+
+	struct GfxSurface
+	{
+		game::iw4::srfTriangles_t tris;
+		Material* material;
+		unsigned char lightmapIndex;
+		unsigned char reflectionProbeIndex;
+		unsigned char primaryLightIndex;
+		unsigned char flags;
+		float bounds[2][3];
+	};
+
+	struct GfxAabbTree;
+
+	struct GfxAabbTreeChildren
+	{
+		GfxAabbTree child;
+	};
+
+	struct GfxAabbTree
+	{
+		float mins[3]; // 0
+		float maxs[3]; // 12
+		unsigned __int16 childCount; // 24
+		unsigned __int16 surfaceCount; // 26
+		unsigned __int16 startSurfIndex; // 28
+		unsigned __int16 surfaceCountNoDecal; // 30
+		unsigned __int16 startSurfIndexNoDecal; // 32
+		unsigned __int16 smodelIndexCount; // 34
+		unsigned __int16* smodelIndexes; // 36
+		int childrenOffset; // 40 (aabbTreeChildrenCount)
+		GfxAabbTreeChildren* gfxAabbTreeChildren; // 44
+	}; static_assert(sizeof(GfxAabbTree) == 48);
+
+	struct GfxPortal;
+
+	struct GfxPortalWritable
+	{
+		char isQueued;
+		char isAncestor;
+		char recursionDepth;
+		char hullPointCount;
+		float(*hullPoints)[2];
+		GfxPortal* queuedParent;
+	};
+
+	struct DpvsPlane
+	{
+		float coeffs[4];
+		char side[3];
+		char pad;
+	};
+
+	struct GfxCell;
+
+	struct GfxPortal
+	{
+		GfxPortalWritable writable;
+		DpvsPlane plane;
+		GfxCell* cell;
+		float(*vertices)[3];
+		char vertexCount;
+		float hullAxis[2][3];
+	};
+
+#pragma pack(push, 4)
+	struct GfxCell
+	{
+		float mins[3]; // 0
+		float maxs[3]; // 12
+		GfxAabbTree* aabbTree; // 24 (just one)
+		int portalCount; // 28
+		GfxPortal* portals; // 32
+		int cullGroupCount; // 36
+		int* cullGroups; // 40
+		unsigned char reflectionProbeCount; // 44
+		unsigned char* reflectionProbes; // 48
+
+		/*
+		int aabbTreeCount; // 24
+		GfxAabbTree* aabbTree; // 28
+		int portalCount; // 32
+		GfxPortal* portals; // 36
+		int cullGroupCount; // 40
+		int* cullGroups; // 44
+		unsigned char reflectionProbeCount; // 48
+		unsigned char* reflectionProbes; // 49
+		*/
+	}; static_assert(sizeof(GfxCell) == 52); // 56 in COD4
+#pragma pack(pop)
+
+#pragma pack(push, 4)
+	struct GfxWorld // slightly different than IW3
+	{
+		const char* name;			// 0
+		const char* baseName;		// 4
+		int planeCount;				// 8
+		GfxWorldDpvsPlanes* planes;	// 12 (pointer is next to count now)
+		int nodeCount;				// 16
+		void* nodes;				// 20 ^
+		int indexCount;				// 24
+		unsigned __int16* indices;	// 28 ^ (is this indices?? idk...)
+		int surfaceCount;			// 32
+		game::iw4::GfxSurface* surfaces;	// 36 ^ (GfxWorldDpvsStatic?)
+		char __pad0[20];			// 40 (unknown between here and 60)
+		int skySurfCount;			// 60
+		int* skyStartSurfs;			// 64
+		GfxImage* skyImage;			// 68
+		char skySamplerState;		// 72 (i think?)
+		const char* skyDomeImageName;		// 76 (varXString used, name madeup)
+		unsigned int vertexCount;			// 80
+		GfxWorldVertexData vd;				// 84
+		unsigned int vertexLayerDataSize;	// 92
+		GfxWorldVertexLayerData vld;		// 96
+		char __pad2[128];					// 104
+		GfxLight* sunLight;					// 232
+		float sunColorFromBsp[3];			// 236
+		unsigned int sunPrimaryLightIndex;	// 248
+		unsigned int primaryLightCount;		// 252
+		int __pad3;							// 256
+		int cullGroupCount;						// 260 (shows 0 debugging)
+		unsigned char reflectionProbeCount;		// 264
+		GfxReflectionProbe* reflectionProbes;	// 268
+		void* cullGroups;							// 272 (from GfxWorldDpvsStatic?)
+		int smodelCount;							// 276 ^ (cellCount?)
+		GfxStaticModelDrawInst* smodelDrawInsts;	// 280 ^
+		void* smodelInsts;							// 284 ?
+		int cellBitsCount;			// 288
+		int unk_2;					// 292 (some sort of count variable)
+		GfxCell* cells;				// 296
+		int lightmapCount;			// 300
+		GfxLightmapArray* lightmaps;// 304
+		GfxLightGrid lightGrid;		// 308
+		int modelCount;				// 360
+		GfxBrushModel* models;		// 364
+		float mins[3];				// 368
+		float maxs[3];				// 380
+		unsigned int checksum;		// 392
+		int materialMemoryCount;	// 396
+		MaterialMemory* materialMemory;		// 400
+		sunflare_t sun;						// 404
+		float outdoorLookupMatrix[4][4];	// 500
+		GfxImage* outdoorImage;				// 564
+
+		// dpvsDyn?
+		unsigned int dynEntClientCount[2];		// 568 (572)
+		unsigned int dynEntClientWordCount[2];	// 576 (580)
+		unsigned char* smodelVisData[4];		// 584 (588) (592) (596)
+		unsigned char* surfaceVisData[4];		// 600 (604) (608) (612)
+
+		GfxDrawSurf* surfaceMaterials;			// 616 (confirmed)
+		unsigned int* surfaceCastsSunShadow;	// 620 ^
+		unsigned int* cellCasterBits;			// 624
+		unsigned int* cellHasSunLitSurfsBits;	// 628 (var_ubyte? ugh)
+		char __pad6[48];					// 632
+		void* gfxDynEntCellRef;				// 680 (?)
+		void* gfxDynEntCellRef2;			// 684 ^
+		GfxSceneDynModel* sceneDynModel;	// 688
+		GfxSceneDynBrush* sceneDynBrush;	// 692
+		short primaryLightForModelDynEnt;				// 696
+		short idk;										// 698
+		unsigned int* primaryLightEntityShadowVis;		// 700
+		unsigned int* primaryLightDynEntShadowVis[2];	// 704 (708)
+		GfxShadowGeometry* shadowGeom;	// 712
+		int lightRegionCount;			// 716 (maybe, primaryLightCount used for it in IW4???)
+		GfxLightRegion* lightRegion;	// 720 ^ idk what this is
+		Material* material_idk;			// 724
+	}; static_assert(sizeof(GfxWorld) == 728); // 732 -> 728 (4 byte difference from COD4 but structed very differently)
+#pragma pack(pop)
 
 	union XAssetHeader
 	{
@@ -835,7 +1305,7 @@ namespace game::qos
 		//gameWorldSp* gameWorldSp;
 		gameWorldMp* gameWorldMp;
 		clipMap_t* clipMap;
-		//GfxWorld* gfxWorld;
+		GfxWorld* gfxWorld;
 
 		RawFile* rawfile;
 	};

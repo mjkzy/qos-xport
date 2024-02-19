@@ -10,7 +10,7 @@
 #include <utils/hook.hpp>
 #include <utils/string.hpp>
 
-#define FORCE_BORDERLESS
+#define FORCE_BORDERLESS // still needs a few things fixed
 #define XLIVELESS
 
 namespace patches
@@ -20,6 +20,11 @@ namespace patches
 		int ret_zero()
 		{
 			return 0;
+		}
+
+		int ret_one(DWORD*, int)
+		{
+			return 1;
 		}
 
 		HWND __stdcall create_window_ex_stub(DWORD ex_style, LPCSTR class_name, LPCSTR window_name, DWORD style, int x, int y, int width, int height, HWND parent, HMENU menu, HINSTANCE inst, LPVOID param)
@@ -38,9 +43,9 @@ namespace patches
 		utils::hook::detour link_xasset_entry_hook;
 		game::qos::XAssetEntry* link_xasset_entry_stub(game::qos::XAssetEntry* entry, int override)
 		{
-			if (entry->asset.type == game::qos::ASSET_TYPE_PHYSPRESET)
+			if (entry->asset.type == game::qos::ASSET_TYPE_GFXWORLD)
 			{
-				const auto troll = entry->asset.header.physPreset;
+				const auto troll = entry->asset.header.gfxWorld;
 				printf("");
 			}
 
@@ -75,16 +80,16 @@ namespace patches
 
 #ifdef DEBUG
 			// hook linkxassetentry to debug stuff
-			//link_xasset_entry_hook.create(game::game_offset(0x103E0640), link_xasset_entry_stub);
+			link_xasset_entry_hook.create(game::game_offset(0x103E0640), link_xasset_entry_stub);
 #endif
 
+// support xliveless emulator
 #ifdef XLIVELESS
-			// stop disconnect error when starting match
-			// Bypass playlist + stats
-			utils::hook::jump(game::game_offset(0x10240B30), PlayListBypass);
-			utils::hook::jump(game::game_offset(0x10240A30), PlayListBypass);
+			// bypass playlist + stats
+			utils::hook::jump(game::game_offset(0x10240B30), ret_one);
+			utils::hook::jump(game::game_offset(0x10240A30), ret_one);
 
-			// Allow map Loading
+			// allow map loading
 			utils::hook::nop(game::game_offset(0x102489A1), 5);
 #endif
 		}

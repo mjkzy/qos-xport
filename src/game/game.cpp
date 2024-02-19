@@ -2,8 +2,9 @@
 
 #include "component/console.hpp"
 
-#include "game.hpp"
-#include "structs.hpp"
+#include "game/game.hpp"
+#include "game/structs.IW4.hpp"
+
 #include <utils/hook.hpp>
 #include "Structs.IW4.hpp"
 
@@ -128,7 +129,6 @@ namespace game
 		} while (index < 0x9C40);
 		InterlockedDecrement(lock);
 	}
-
 
 	void ConvertBounds(game::iw4::Bounds* bounds, game::qos::vec3_t mins, game::qos::vec3_t maxs)
 	{

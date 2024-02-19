@@ -25,10 +25,9 @@ namespace xmodel
 
 			iw4_asset->name = xmodel->name;
 			iw4_asset->numBones = xmodel->numBones;
-
 			iw4_asset->numRootBones = xmodel->numRootBones;
 			iw4_asset->numsurfs = xmodel->numsurfs;
-			//iw4_asset->lodRampType = xmodel->lodRampType;
+			iw4_asset->lodRampType = xmodel->lodRampType;
 
 			iw4_asset->scale = 1.0f;
 
@@ -40,11 +39,10 @@ namespace xmodel
 			iw4_asset->baseMat = xmodel->baseMat;
 
 			iw4_asset->materialHandles = utils::memory::allocate_array<game::iw4::Material*>(xmodel->numsurfs);
-			///TODO - GfxImage is NULLPTR from Material->textureTable. Material->TextureCount could be wrong
-			/*for (size_t i = 0; i < xmodel->numsurfs; i++)
+			for (size_t i = 0; i < xmodel->numsurfs; i++)
 			{
 				iw4_asset->materialHandles[i] = assethandler::convert_asset_header(game::qos::ASSET_TYPE_MATERIAL, { xmodel->materialHandles[i] }).material;
-			}*/
+			}
 
 			for (int i = 0; i < 4; ++i)
 			{
@@ -72,49 +70,58 @@ namespace xmodel
 				iw4_asset->lodInfo[i].smcBucket = 0;
 #endif
 
-				//	if (iw4_asset->lodInfo[i].numsurfs)
-				//	{
-				//		iw4_asset->lodInfo[i].surfs = utils::memory::allocate_array<game::iw4::XSurface>(iw4_asset->lodInfo[i].numsurfs);
+				if (iw4_asset->lodInfo[i].numsurfs)
+				{
+					iw4_asset->lodInfo[i].surfs = utils::memory::allocate_array<game::iw4::XSurface>(iw4_asset->lodInfo[i].numsurfs);
 
-				//		for (unsigned __int16 j = 0; j < iw4_asset->lodInfo[i].numsurfs; ++j)
-				//		{
-				//			game::iw4::XSurface* target = &iw4_asset->lodInfo[i].surfs[j];
-				//			game::qos::XSurface* source = &xmodel->surfs[j + iw4_asset->lodInfo[i].surfIndex];
+					for (unsigned __int16 j = 0; j < iw4_asset->lodInfo[i].numsurfs; ++j)
+					{
+						game::iw4::XSurface* target = &iw4_asset->lodInfo[i].surfs[j];
+						game::qos::XSurface* source = &xmodel->surfs[j + iw4_asset->lodInfo[i].surfIndex];
 
-				//			target->tileMode = source->tileMode;
-				//			target->deformed = source->deformed;
-				//			target->vertCount = source->vertCount;
-				//			target->triCount = source->triCount;
-				//			target->zoneHandle = source->zoneHandle;
-				//			target->baseTriIndex = source->baseTriIndex;
-				//			target->baseVertIndex = source->baseVertIndex;
-				//			target->triIndices = source->triIndices;
-				//			target->vertInfo = source->vertInfo;
-				//			target->verts0 = source->verts0;
-				//			target->vertListCount = source->vertListCount;
-				//			target->vertList = source->vertList;
+						target->tileMode = source->tileMode;
+						target->deformed = source->deformed;
+						target->vertCount = source->vertCount;
+						target->triCount = source->triCount;
+						target->zoneHandle = 0; //source->zoneHandle;
+						target->baseTriIndex = source->baseTriIndex;
+						target->baseVertIndex = 0; //source->baseVertIndex;
+						target->triIndices = source->triIndices;
 
-				//			if (i != iw4_asset->collLod)
-				//			{
-				//				for (size_t k = 0; k < target->vertListCount; k++)
-				//				{
-				//					target->vertList[k].collisionTree = nullptr; // Only collod is used
-				//				}
-				//			}
+						// vertInfo
+						memcpy(target->vertInfo.vertCount, source->vertInfo.vertCount, 8);
+						target->vertInfo.vertsBlend = source->vertInfo.vertsBlend;
 
-				//			// 6 vs 4 part bit elements
-				//			std::memcpy(target->partBits, source->partBits, sizeof(source->partBits));
-				//		}
+						target->verts0 = source->verts0;
 
-				//		iw4_asset->lodInfo[i].modelSurfs = LocalAllocator.Allocate<game::iw4::XModelSurfs>();
-				//		iw4_asset->lodInfo[i].modelSurfs->name = LocalAllocator.DuplicateString(Utils::VA("%s_lod%d", model->name, i & 0xFF));
-				//		iw4_asset->lodInfo[i].modelSurfs->numSurfaces = static_cast<int>(iw4_asset->lodInfo[i].numsurfs);
-				//		iw4_asset->lodInfo[i].modelSurfs->surfaces = iw4_asset->lodInfo[i].surfs;
+						target->vertListCount = source->vertListCount;
+						// vertList
+						target->vertList->boneOffset = source->vertList->boneOffset;
+						target->vertList->vertCount = source->vertList->vertCount;
+						target->vertList->triOffset = source->vertList->triOffset;
+						target->vertList->triCount = source->vertList->triCount;
+						target->vertList->collisionTree = source->vertList->collisionTree;
 
-				//		// 6 vs 4 part bit elements
-				//		std::memcpy(iw4_asset->lodInfo[i].modelSurfs->partBits, model->lodInfo[i].partBits, sizeof(model->lodInfo[i].partBits));
-				//	}
-				//}
+						if (i != iw4_asset->collLod)
+						{
+							for (size_t k = 0; k < target->vertListCount; k++)
+							{
+								target->vertList[k].collisionTree = nullptr; // Only collod is used
+							}
+						}
+
+						// 6 vs 4 part bit elements
+						std::memcpy(target->partBits, source->partBits, sizeof(source->partBits));
+					}
+
+					iw4_asset->lodInfo[i].modelSurfs = utils::memory::allocate<game::iw4::XModelSurfs>();
+					iw4_asset->lodInfo[i].modelSurfs->name = utils::memory::duplicate_string(utils::string::va("%s_lod%d", xmodel->name, i & 0xFF));
+					iw4_asset->lodInfo[i].modelSurfs->numSurfaces = static_cast<int>(iw4_asset->lodInfo[i].numsurfs);
+					iw4_asset->lodInfo[i].modelSurfs->surfaces = iw4_asset->lodInfo[i].surfs;
+
+					// 6 vs 4 part bit elements
+					std::memcpy(iw4_asset->lodInfo[i].modelSurfs->partBits, xmodel->lodInfo[i].partBits, sizeof(xmodel->lodInfo[i].partBits));
+				}
 
 				iw4_asset->numLods = static_cast<char>(xmodel->numLods);
 				iw4_asset->collLod = static_cast<char>(xmodel->collLod);
@@ -123,11 +130,11 @@ namespace xmodel
 				if (xmodel->collSurfs)
 				{
 					iw4_asset->collSurfs = utils::memory::allocate_array<game::iw4::XModelCollSurf_s>(xmodel->numCollSurfs);
-					for (int i = 0; i < xmodel->numCollSurfs; ++i)
+					for (int i_2 = 0; i_2 < xmodel->numCollSurfs; ++i_2)
 					{
 						static_assert(sizeof(game::qos::XModelCollSurf_s) == sizeof(game::iw4::XModelCollSurf_s), "Size mismatch");
-						std::memcpy(&iw4_asset->collSurfs[i], &xmodel->collSurfs[i], sizeof(game::iw4::XModelCollSurf_s));
-						iw4_asset->collSurfs[i].bounds.compute(xmodel->collSurfs[i].mins, xmodel->collSurfs[i].maxs);
+						std::memcpy(&iw4_asset->collSurfs[i_2], &xmodel->collSurfs[i_2], sizeof(game::iw4::XModelCollSurf_s));
+						iw4_asset->collSurfs[i_2].bounds.compute(xmodel->collSurfs[i_2].mins, xmodel->collSurfs[i_2].maxs);
 					}
 				}
 
@@ -158,8 +165,7 @@ namespace xmodel
 
 				iw4_asset->memUsage = xmodel->memUsage;
 				iw4_asset->bad = xmodel->bad;
-				///TODO
-				//iw4_asset->physPreset = xmodel->physPreset;
+				iw4_asset->physPreset = xmodel->physPreset;
 
 				if (xmodel->physGeoms)
 				{
@@ -196,7 +202,7 @@ namespace xmodel
 								PHYS_GEOM_BOX = 0x1,
 								PHYS_GEOM_BRUSHMODEL = 0x2,
 								PHYS_GEOM_BRUSH = 0x3,
-									PHYS_GEOM_COLLMAP = 0x4,
+								PHYS_GEOM_COLLMAP = 0x4,
 								PHYS_GEOM_CYLINDER = 0x5,
 								PHYS_GEOM_CAPSULE = 0x6,
 									PHYS_GEOM_GLASS = 0x7,
@@ -215,7 +221,7 @@ namespace xmodel
 
 						if (source->brush)
 						{
-							target->brush = utils::memory::allocate<game::iw4::BrushWrapper>();//LocalAllocator.Allocate<game::iw4::BrushWrapper>();
+							target->brush = utils::memory::allocate<game::iw4::BrushWrapper>();
 							target->brush->bounds.compute(source->brush->mins, source->brush->maxs);
 
 							target->brush->brush.numsides = static_cast<unsigned short>(source->brush->numsides);
@@ -259,10 +265,9 @@ namespace xmodel
 					// The error may lie in the above codeblock, or in zonebuilder's reading of physcollmaps.
 					iw4_asset->physCollmap = nullptr;
 				}
-
-
-				return { iw4_asset };
 			}
+
+			return { iw4_asset };
 		}
 	}
 
@@ -272,30 +277,30 @@ namespace xmodel
 		void post_load() override
 		{
 			scheduler::once([&]()
+			{
+				command::add("dumpxmodel", [](const command::params& params)
 				{
-					command::add("dumpxmodel", [](const command::params& params)
-						{
-							if (params.size() < 2)
-							{
-								console::info("USAGE: dumpxmodel <name>\n");
-								return;
-							}
+					if (params.size() < 2)
+					{
+						console::info("USAGE: dumpxmodel <name>\n");
+						return;
+					}
 
-							const auto name = params[1];
+					const auto name = params[1];
 
-							auto header = game::DB_FindXAssetHeader(game::qos::ASSET_TYPE_XMODEL, name);
-							if (!header.xmodel)
-							{
-								console::error("dumpxmodel failed on '%s'\n", name);
-								return;
-							}
+					auto header = game::DB_FindXAssetHeader(game::qos::ASSET_TYPE_XMODEL, name);
+					if (!header.xmodel)
+					{
+						console::error("dumpxmodel failed on '%s'\n", name);
+						return;
+					}
 
-							auto converted = xmodel::convert(header.xmodel);
-							map_dumper::api->write(game::iw4::ASSET_TYPE_XMODEL, converted);
+					auto converted = xmodel::convert(header.xmodel);
+					map_dumper::api->write(game::iw4::ASSET_TYPE_XMODEL, converted);
 
-							console::info("dumped '%s' for IW4\n", name);
-						});
-				}, scheduler::main);
+					console::info("dumped '%s' for IW4\n", name);
+				});
+			}, scheduler::main);
 		}
 
 		game::qos::XAssetType get_type() override
