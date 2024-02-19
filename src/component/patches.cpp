@@ -51,11 +51,6 @@ namespace patches
 
 			return link_xasset_entry_hook.invoke<game::qos::XAssetEntry*>(entry, override);
 		}
-
-		int PlayListBypass(DWORD* unk, int a2)
-		{
-			return 1;
-		}
 	}
 
 	class component final : public component_interface
