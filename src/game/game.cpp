@@ -91,15 +91,15 @@ namespace game
 
 	void DB_EnumXAssetEntries(qos::XAssetType type, std::function<void(qos::XAssetEntryPoolEntry*)> callback, bool overrides)
 	{
-		volatile long* lock = reinterpret_cast<volatile long*>(game::game_offset(0x1056250A));
+		volatile long* lock = reinterpret_cast<volatile long*>(game_offset(0x1056250A));
 		InterlockedIncrement(lock);
 
-		while (*reinterpret_cast<volatile long*>(0x105624F8)) std::this_thread::sleep_for(1ms);
+		while (*reinterpret_cast<volatile long*>(game_offset(0x105624F8))) std::this_thread::sleep_for(1ms);
 
 		unsigned int index = 0;
 		do
 		{
-			unsigned short hashIndex = *game::db_hashTable[index];
+			unsigned short hashIndex = game::db_hashTable[index];
 			if (hashIndex)
 			{
 				do
