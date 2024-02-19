@@ -26,6 +26,7 @@ namespace mapents
 
 			Entities mapEnts(entString);
 
+			mapEnts.DeleteOldSchoolPickups();
 			mapEnts.AddRemovedSModels(); ///TODO
 
 			entString = mapEnts.Build();

@@ -1,5 +1,6 @@
 #include <std_include.hpp>
 
+#include <component/console.hpp>
 #include <game/game.hpp>
 #include <game/structs.hpp>
 #include <utils/string.hpp>
@@ -165,30 +166,49 @@ bool Entities::ConvertTurrets()
 	return hasTurrets;
 }
 
+/// Yes - QOS still has OldSchoolPickups
+void Entities::DeleteOldSchoolPickups()
+{
+	for (auto i = this->entities.begin(); i != this->entities.end();)
+	{
+		if (i->find("weaponinfo") != i->end() || (i->find("targetname") != i->end() && (*i)["targetname"] == "oldschool_pickup"s))
+		{
+			if (i->find("classname") == i->end() || (*i)["classname"] != "misc_turret"s)
+			{
+				console::info("Erased weapon %s from map ents\n", (*i)["model"].c_str());
+				i = this->entities.erase(i);
+				continue;
+			}
+		}
+
+		++i;
+	}
+}
+
 void Entities::AddRemovedSModels()
 {
 	///todo
 	/*game::qos::GfxWorld* iw3World{};
 
-	game::DB_EnumXAssetEntries(Game::IW3::ASSET_TYPE_GFXWORLD, [&iw3World](Game::IW3::XAssetEntryPoolEntry* entry)
-		{
-			iw3World = entry->entry.asset.header.gfxWorld;
-		}, false);
+	game::DB_EnumXAssetEntries(game::qos::ASSET_TYPE_GFXWORLD, [&iw3World](game::qos::XAssetEntryPoolEntry* entry)
+	{
+		iw3World = entry->entry.asset.header.gfxWorld;
+	}, false);
 
 
 	if (iw3World) {
-		for (auto index : Components::IGfxWorld::removedStaticModelIndices)
+		for (auto index : IGfxWorld::removedStaticModelIndices)
 		{
-			auto drawInst = &iw3World->dpvs.smodelDrawInsts[index];
+			auto drawInst = &iw3World->smodelDrawInsts[index];
 
 			game::qos::vec3_t angles{};
 			game::AxisToAngles(&angles, drawInst->placement.axis);
-			const std::string origin = Utils::VA("%f %f %f", drawInst->placement.origin[0], drawInst->placement.origin[1], drawInst->placement.origin[2]);
-			const std::string anglesStr = Utils::VA("%f %f %f", angles[0], angles[1], angles[2]);
+			const std::string origin = utils::string::va("%f %f %f", drawInst->placement.origin[0], drawInst->placement.origin[1], drawInst->placement.origin[2]);
+			const std::string anglesStr = utils::string::va("%f %f %f", angles[0], angles[1], angles[2]);
 
 			std::unordered_map<std::string, std::string> scriptModelEntity =
 			{
-				{    "_comment",                 "added by iw3xport"},
+				{    "_comment",                 "added by qos-exp"},
 				{    "classname",                "script_model"},
 				{    "ltOrigin",                 origin},
 				{    "origin",                   origin},

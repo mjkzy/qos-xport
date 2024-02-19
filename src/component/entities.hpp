@@ -15,6 +15,7 @@ public:
 	bool ConvertVehicles();
 	void AddCarePackages();
 	void AddRemovedSModels();
+	void DeleteOldSchoolPickups();
 
 private:
 	enum
