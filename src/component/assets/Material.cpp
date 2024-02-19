@@ -73,16 +73,17 @@ namespace material
 			if (iw4_asset->sortKey == 0)
 			{
 				iw4_asset->stateFlags = static_cast<game::iw4::StateFlags>(iw4_asset->stateFlags | game::iw4::STATE_FLAG_AMBIENT);
-				console::info("Added STATE_FLAG_AMBIENT on {} (sortkey is opaque-ambient)\n", iw4_asset->name);
+				console::info("Added STATE_FLAG_AMBIENT on %s (sortkey is opaque-ambient)\n", iw4_asset->name);
 			}
 
 			// Should we give ambient stateflag to everybody by default?
 			iw4_asset->cameraRegion = material->cameraRegion;
 
-			if (iw4_asset->cameraRegion == 0x3) {
+			if (iw4_asset->cameraRegion == 0x3) 
+			{
 				// 0x3 is NONE in iw3, but DEPTH_HACK in iw4
 				// In iw4 NONE is 0x4
-				console::info("Swapped material {} camera region from 0x3 to 0x4 (NONE)\n", iw4_asset->name);
+				console::info("Swapped material %s camera region from 0x3 to 0x4 (NONE)\n", iw4_asset->name);
 				iw4_asset->cameraRegion = 0x4;
 			}
 

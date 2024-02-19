@@ -96,7 +96,7 @@ namespace gfximage
 
 			iw4_asset->mapType = static_cast<unsigned char>(image->mapType);
 			iw4_asset->semantic = static_cast<unsigned char>(image->semantic);
-			iw4_asset->category = image->category;
+			iw4_asset->category = 0;//image->category;
 			iw4_asset->picmip = image->picmip;
 			iw4_asset->noPicmip = image->noPicmip;
 			iw4_asset->track = image->track;
