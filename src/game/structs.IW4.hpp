@@ -1,6 +1,5 @@
 #pragma once
 
-#include <std_include.hpp>
 #include "structs.hpp"
 
 namespace game::iw4
@@ -344,25 +343,6 @@ namespace game::iw4
 		float radiusSquared;
 	};
 
-	struct srfTriangles_t
-	{
-		int vertexLayerData;
-		int firstVertex;
-		unsigned __int16 vertexCount;
-		unsigned __int16 triCount;
-		int baseIndex;
-	};
-
-	struct GfxSurface
-	{
-		srfTriangles_t tris;
-		Material* material;
-		unsigned char lightmapIndex;
-		unsigned char reflectionProbeIndex;
-		unsigned char primaryLightIndex;
-		unsigned char flags;
-	};
-
 	struct GfxPortal;
 
 	struct GfxPortalWritable
@@ -417,7 +397,7 @@ namespace game::iw4
 		unsigned char primaryLightIndex;
 		unsigned char flags;
 		unsigned char firstMtlSkinIndex;
-		game::qos::GfxColor groundLighting;
+		qos::GfxColor groundLighting;
 		unsigned __int16 cacheId[4];
 	};
 
@@ -464,11 +444,11 @@ namespace game::iw4
 	{
 		float xyz[3];
 		float binormalSign;
-		game::qos::GfxColor color;
+		qos::GfxColor color;
 		float texCoord[2];
 		float lmapCoord[2];
-		game::qos::PackedUnitVec normal;
-		game::qos::PackedUnitVec tangent;
+		qos::PackedUnitVec normal;
+		qos::PackedUnitVec tangent;
 	};
 
 	struct GfxWorldVertexData
@@ -601,7 +581,7 @@ namespace game::iw4
 		char* surfaceVisData[3];
 		unsigned __int16* sortedSurfIndex;
 		GfxStaticModelInst* smodelInsts;
-		GfxSurface* surfaces;
+		qos::GfxSurface_* surfaces;
 		GfxSurfaceBounds* surfacesBounds;
 		GfxStaticModelDrawInst* smodelDrawInsts;
 		GfxDrawSurf* surfaceMaterials;
@@ -740,12 +720,12 @@ namespace game::iw4
 		unsigned int* cellCasterBits; // 416
 		unsigned int* cellHasSunLitSurfsBits; // 420
 		GfxSceneDynModel* sceneDynModel; // 424
-		game::qos::GfxSceneDynBrush* sceneDynBrush; // 428
+		qos::GfxSceneDynBrush* sceneDynBrush; // 428
 		unsigned int* primaryLightEntityShadowVis; // 432
 		unsigned int* primaryLightDynEntShadowVis[2]; // 436
 		char* nonSunPrimaryLightForModelDynEnt; // 444
-		game::qos::GfxShadowGeometry* shadowGeom; // 448
-		game::qos::GfxLightRegion* lightRegion; // 452
+		qos::GfxShadowGeometry* shadowGeom; // 448
+		qos::GfxLightRegion* lightRegion; // 452
 		GfxWorldDpvsStatic dpvs; // 456
 		GfxWorldDpvsDynamic dpvsDyn; // 564
 		unsigned int mapVtxChecksum; // 612
@@ -1227,13 +1207,8 @@ namespace game::iw4
 
 	struct cNode_t
 	{
-		game::qos::cplane_s* plane;
+		qos::cplane_s* plane;
 		__int16 children[2];
-	};
-
-	struct cLeafBrushNodeLeaf_t
-	{
-		unsigned __int16* brushes;
 	};
 
 	struct cLeafBrushNodeChildren_t
@@ -1279,7 +1254,7 @@ namespace game::iw4
 		const char* name;
 		int isInUse;
 		int planeCount;
-		game::qos::cplane_s* planes;
+		qos::cplane_s* planes;
 		unsigned int numStaticModels;
 		cStaticModel_t* staticModelList;
 		unsigned int numMaterials;
@@ -1564,7 +1539,7 @@ namespace game::iw4
 		bool hasBeenUploaded;
 		char unused[1];
 		MaterialTechniqueSet* remappedTechniqueSet;
-		game::qos::MaterialTechnique* techniques[48];
+		qos::MaterialTechnique* techniques[48];
 	};
 
 #pragma pack(push, 4)
@@ -1600,7 +1575,7 @@ namespace game::iw4
 		float invSplitArcDist;
 		float invSplitTime;
 		int vertCount;
-		game::qos::FxTrailVertex* verts;
+		qos::FxTrailVertex* verts;
 		int indCount;
 		unsigned __int16* inds;
 	};

@@ -1,6 +1,7 @@
 #include <std_include.hpp>
 #include "loader/component_loader.hpp"
 
+/*
 #include "component/assethandler.hpp"
 #include "component/command.hpp"
 #include "component/console.hpp"
@@ -187,27 +188,14 @@ namespace xmodel
 						if (source->type >= 4)
 						{
 							// We're going from
-							/*
-								PHYS_GEOM_NONE = 0x0,
-								PHYS_GEOM_BOX = 0x1,
-								PHYS_GEOM_BRUSHMODEL = 0x2,
-								PHYS_GEOM_BRUSH = 0x3,
-								PHYS_GEOM_CYLINDER = 0x4,
-								PHYS_GEOM_CAPSULE = 0x5,
-									PHYS_GEOM_COUNT = 0x6,
-
-							to
-
-								PHYS_GEOM_NONE = 0x0,
-								PHYS_GEOM_BOX = 0x1,
-								PHYS_GEOM_BRUSHMODEL = 0x2,
-								PHYS_GEOM_BRUSH = 0x3,
-								PHYS_GEOM_COLLMAP = 0x4,
-								PHYS_GEOM_CYLINDER = 0x5,
-								PHYS_GEOM_CAPSULE = 0x6,
-									PHYS_GEOM_GLASS = 0x7,
-									PHYS_GEOM_COUNT = 0x8,
-							*/
+								//PHYS_GEOM_NONE = 0x0,
+								//PHYS_GEOM_BOX = 0x1,
+								//PHYS_GEOM_BRUSHMODEL = 0x2,
+								//PHYS_GEOM_BRUSH = 0x3,
+								//PHYS_GEOM_CYLINDER = 0x4,
+								//PHYS_GEOM_CAPSULE = 0x5,
+								//PHYS_GEOM_COUNT = 0x6,
+								//everything else but PHYS_GEOM_COLLMAP = 0x4,
 
 							target->type += 1;
 
@@ -316,3 +304,4 @@ namespace xmodel
 }
 
 REGISTER_COMPONENT(xmodel::component)
+*/

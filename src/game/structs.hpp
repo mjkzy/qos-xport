@@ -1123,23 +1123,31 @@ namespace game::qos
 		unsigned __int16 dynEntId;
 	};
 
-	struct GfxSurface
+	struct srfTriangles_t
 	{
-		game::iw4::srfTriangles_t tris;
+		int vertexLayerData;
+		int firstVertex;
+		unsigned __int16 vertexCount;
+		unsigned __int16 triCount;
+		int baseIndex;
+	};
+
+	struct GfxSurface_
+	{
+		srfTriangles_t tris;
 		Material* material;
 		unsigned char lightmapIndex;
 		unsigned char reflectionProbeIndex;
 		unsigned char primaryLightIndex;
 		unsigned char flags;
-		float bounds[2][3];
 	};
 
-	struct GfxAabbTree;
-
-	struct GfxAabbTreeChildren
+	struct GfxSurface : GfxSurface_
 	{
-		GfxAabbTree child;
+		float bounds[2][3]; // not on IW4
 	};
+
+	struct GfxAabbTreeChildren;
 
 	struct GfxAabbTree
 	{
@@ -1155,6 +1163,11 @@ namespace game::qos
 		int childrenOffset; // 40 (aabbTreeChildrenCount)
 		GfxAabbTreeChildren* gfxAabbTreeChildren; // 44
 	}; static_assert(sizeof(GfxAabbTree) == 48);
+
+	struct GfxAabbTreeChildren
+	{
+		GfxAabbTree child;
+	};
 
 	struct GfxPortal;
 
@@ -1225,7 +1238,7 @@ namespace game::qos
 		int indexCount;				// 24
 		unsigned __int16* indices;	// 28 ^ (is this indices?? idk...)
 		int surfaceCount;			// 32
-		game::iw4::GfxSurface* surfaces;	// 36 ^ (GfxWorldDpvsStatic?)
+		GfxSurface* surfaces;	// 36 ^ (GfxWorldDpvsStatic?)
 		char __pad0[20];			// 40 (unknown between here and 60)
 		int skySurfCount;			// 60
 		int* skyStartSurfs;			// 64
@@ -1355,4 +1368,56 @@ namespace game::qos
 	{
 		char* mt_buffer;
 	};
+
+	union DvarValue
+	{
+		bool enabled;
+		int integer;
+		unsigned int unsignedInt;
+		float value;
+		float vector[4];
+		const char* string;
+		char color[4];
+	};
+
+	struct $BFBB53559BEAC4289F32B924847E59CB
+	{
+		int stringCount;
+		const char** strings;
+	};
+
+	struct $9CA192F9DB66A3CB7E01DE78A0DEA53D
+	{
+		int min;
+		int max;
+	};
+
+	struct $251C2428A496074035CACA7AAF3D55BD
+	{
+		float min;
+		float max;
+	};
+
+	union DvarLimits
+	{
+		$BFBB53559BEAC4289F32B924847E59CB enumeration;
+		$9CA192F9DB66A3CB7E01DE78A0DEA53D integer;
+		$251C2428A496074035CACA7AAF3D55BD value;
+		$251C2428A496074035CACA7AAF3D55BD vector;
+	};
+
+	struct dvar_s
+	{
+		const char* name; // 0
+		const char* description; // 4
+		unsigned __int16 flags; // 8
+		char type; // 10
+		bool modified; // 11
+		DvarValue current;	// 12
+		DvarValue latched;	// 28
+		DvarValue reset;	// 44
+		DvarLimits domain;	// 60
+		bool(__cdecl* domainFunc)(dvar_s*, DvarValue); // 68
+		dvar_s* hashNext; // 72
+	}; static_assert(sizeof(dvar_s) == 76);
 }

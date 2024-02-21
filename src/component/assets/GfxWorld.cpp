@@ -1,6 +1,7 @@
 #include <std_include.hpp>
 #include "loader/component_loader.hpp"
 
+/*
 #include "component/assethandler.hpp"
 #include "component/command.hpp"
 #include "component/console.hpp"
@@ -67,7 +68,7 @@ namespace gfxworld
 				sky->skyImage = assethandler::convert_asset_header(game::qos::ASSET_TYPE_IMAGE, { world->skyImage }).image;
 			}
 
-			sky->skySamplerState = world->skySamplerState/* & 0xFF*/;
+			sky->skySamplerState = world->skySamplerState; // 0xFf
 			sky->skyStartSurfs = world->skyStartSurfs;
 			sky->skySurfCount = world->skySurfCount;
 
@@ -169,3 +170,4 @@ namespace gfxworld
 }
 
 REGISTER_COMPONENT(gfxworld::component)
+*/

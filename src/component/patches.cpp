@@ -8,6 +8,7 @@
 #include <mmeapi.h>
 
 #include <utils/hook.hpp>
+#include <utils/memory.hpp>
 #include <utils/string.hpp>
 
 #define FORCE_BORDERLESS // still needs a few things fixed
@@ -17,9 +18,12 @@ namespace patches
 {
 	namespace
 	{
-		int ret_zero()
+		game::qos::dvar_s* ret_zero()
 		{
-			return 0;
+			const auto dvar = utils::memory::allocate<game::qos::dvar_s>();
+			dvar->type = 5;
+			dvar->current.integer = 0;
+			return dvar;
 		}
 
 		int ret_one(DWORD*, int)
