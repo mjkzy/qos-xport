@@ -21,6 +21,7 @@ namespace game::qos
 		ASSET_TYPE_XANIMPARTS = 0x4,
 		ASSET_TYPE_XMODEL = 0x5,
 		ASSET_TYPE_MATERIAL = 0x6,
+		//ASSET_TYPE_PIXELSHADER = 7,			// pixelshader on Xbox, rest from here is + 1 :)
 		ASSET_TYPE_TECHNIQUE_SET = 0x7,
 		ASSET_TYPE_IMAGE = 0x8,
 		ASSET_TYPE_SOUND = 0x9,
@@ -52,7 +53,7 @@ namespace game::qos
 
 		// these assets only exist in QoS
 		ASSET_TYPE_XML_TREE = 34,
-		ASSET_TYPE_SCENE_ANIM_RESOURCE = 35,
+		ASSET_TYPE_SCENE_ANIMATION = 35,
 		ASSET_TYPE_CUTSCENE_RESOURCE = 36,
 		ASSET_TYPE_CUSTOM_CAMERA_LIST = 37,
 
