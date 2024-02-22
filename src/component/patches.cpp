@@ -14,18 +14,27 @@
 #define FORCE_BORDERLESS // still needs a few things fixed
 #define XLIVELESS
 
+#pragma pack(push, 4)
+struct GfxWindowParms
+{
+	char __pad[8]; // 0
+	bool fullscreen; // 8
+	int x; // 12
+	int y; // 16
+	int padding; // 20
+	int sceneWidth; // 24
+	int sceneHeight; // 28
+	int displayWidth; // 32
+	int displayHeight; // 36
+	int aaSamples; // 40
+	// 44
+};
+#pragma pack(pop)
+
 namespace patches
 {
 	namespace
 	{
-		game::qos::dvar_s* ret_zero()
-		{
-			const auto dvar = utils::memory::allocate<game::qos::dvar_s>();
-			dvar->type = 5;
-			dvar->current.integer = 0;
-			return dvar;
-		}
-
 		int ret_one(DWORD*, int)
 		{
 			return 1;
@@ -44,16 +53,12 @@ namespace patches
 			return CreateWindowExA(ex_style, class_name, window_name, style, x, y, width, height, parent, menu, inst, param);
 		}
 
-		utils::hook::detour link_xasset_entry_hook;
-		game::qos::XAssetEntry* link_xasset_entry_stub(game::qos::XAssetEntry* entry, int override)
+		utils::hook::detour create_window_hook;
+		void create_window_stub(GfxWindowParms* wndParms)
 		{
-			if (entry->asset.type == game::qos::ASSET_TYPE_GFXWORLD)
-			{
-				const auto troll = entry->asset.header.gfxWorld;
-				printf("");
-			}
-
-			return link_xasset_entry_hook.invoke<game::qos::XAssetEntry*>(entry, override);
+			create_window_hook.invoke<void>(wndParms);
+			const auto parms = wndParms;
+			printf("");
 		}
 	}
 
@@ -67,8 +72,15 @@ namespace patches
 			utils::hook::nop(game::game_offset(0x103BE1A2), 2);
 
 			// return 0 for x & y pos
-			utils::hook::call(game::game_offset(0x103BE2AD), ret_zero); // vid_xpos
-			utils::hook::call(game::game_offset(0x103BE2DF), ret_zero); // vid_ypos
+			/*
+			utils::hook::call(game::game_offset(0x103BE2AD), vidpos_register_int_stub); // vid_xpos
+			utils::hook::call(game::game_offset(0x103BE2DF), vidpos_register_int_stub); // vid_ypos
+			utils::hook::call(game::game_offset(0x103BD364), vidpos_register_int_stub); // ^
+			utils::hook::call(game::game_offset(0x103BD399), vidpos_register_int_stub); // ^
+			*/
+
+			// r_createwindow
+			//create_window_hook.create(game::game_offset(0x103BD690), &create_window_stub);
 
 			// intercept import for CreateWindowExA to change window stuff
 			utils::hook::set(game::game_offset(0x1047627C), create_window_ex_stub);
@@ -79,7 +91,7 @@ namespace patches
 
 #ifdef DEBUG
 			// hook linkxassetentry to debug stuff
-			link_xasset_entry_hook.create(game::game_offset(0x103E0640), link_xasset_entry_stub);
+			//link_xasset_entry_hook.create(game::game_offset(0x103E0640), link_xasset_entry_stub);
 #endif
 
 // support xliveless emulator

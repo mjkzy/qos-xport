@@ -1,4 +1,5 @@
 #include <std_include.hpp>
+#include <Windows.h>
 
 #include "loader/component_loader.hpp"
 #include "game/game.hpp"
@@ -123,6 +124,7 @@ int WINAPI DllMain(HINSTANCE, const DWORD reason, LPVOID)
 {
 	if (reason == DLL_PROCESS_ATTACH)
 	{
+		//Sleep(4000);
 		main();
 	}
 

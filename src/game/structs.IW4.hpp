@@ -562,6 +562,17 @@ namespace game::iw4
 		unsigned long long packed;
 	};
 
+	struct GfxSurface
+	{
+		qos::srfTriangles_t tris;
+		Material* material;
+		unsigned char lightmapIndex;
+		unsigned char reflectionProbeIndex;
+		unsigned char primaryLightIndex;
+		unsigned char flags;
+		float bounds[2][3]; // not on IW4
+	};
+
 	struct GfxWorldDpvsStatic
 	{
 		unsigned int smodelCount;
@@ -581,7 +592,7 @@ namespace game::iw4
 		char* surfaceVisData[3];
 		unsigned __int16* sortedSurfIndex;
 		GfxStaticModelInst* smodelInsts;
-		qos::GfxSurface_* surfaces;
+		GfxSurface* surfaces;
 		GfxSurfaceBounds* surfacesBounds;
 		GfxStaticModelDrawInst* smodelDrawInsts;
 		GfxDrawSurf* surfaceMaterials;

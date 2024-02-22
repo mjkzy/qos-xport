@@ -624,18 +624,6 @@ namespace game::qos
 		unsigned char packed;
 	};
 
-	struct MaterialInfo
-	{
-		const char* name; // 0
-		MaterialGameFlags gameFlags; // 4
-		char sortKey; // 5
-		char textureAtlasRowCount; // 6
-		char textureAtlasColumnCount; // 7
-		GfxDrawSurf drawSurf; // 8
-		unsigned int surfaceTypeBits; // 16
-		unsigned __int16 hashIndex; // 20
-	}; static_assert(sizeof(MaterialInfo) == 24);
-
 	enum StateFlags : unsigned char 
 	{
 		STATE_FLAG_CULL_BACK = 0x1,
@@ -650,7 +638,14 @@ namespace game::qos
 
 	struct Material
 	{
-		MaterialInfo info; // 0
+		const char* name; // 0
+		MaterialGameFlags gameFlags; // 4
+		char sortKey; // 5
+		char textureAtlasRowCount; // 6
+		char textureAtlasColumnCount; // 7
+		GfxDrawSurf drawSurf; // 8
+		unsigned int surfaceTypeBits; // 16
+		unsigned __int16 hashIndex; // 20
 		char __pad0[8]; // 24 (rest of MaterialInfo?)
 		char stateBitsEntry[35]; // 32
 		char textureCount; // 67
@@ -869,21 +864,21 @@ namespace game::qos
 
 	struct ComPrimaryLight
 	{
-		char type;
-		char canUseShadowMap;
-		char exponent;
-		char unused;
-		float color[3];
-		float dir[3];
-		float origin[3];
-		float radius;
-		float cosHalfFovOuter;
-		float cosHalfFovInner;
-		float cosHalfFovExpanded;
-		float rotationLimit;
-		float translationLimit;
-		const char* defName;
-	};
+		char type;				// 0
+		char canUseShadowMap;	// 1
+		char exponent;			// 2
+		char unused;			// 3
+		float color[3];			// 4
+		float dir[3];			// 16
+		float origin[3];		// 28
+		float radius;			// 40
+		float cosHalfFovOuter;	// 44
+		float cosHalfFovInner;	// 48
+		float cosHalfFovExpanded; // 52
+		float rotationLimit;	// 56
+		float translationLimit;	// 60
+		const char* defName;	// 64
+	}; static_assert(sizeof(ComPrimaryLight) == 68);
 
 	struct ComWorld
 	{
@@ -1142,11 +1137,6 @@ namespace game::qos
 		unsigned char flags;
 	};
 
-	struct GfxSurface : GfxSurface_
-	{
-		float bounds[2][3]; // not on IW4
-	};
-
 	struct GfxAabbTreeChildren;
 
 	struct GfxAabbTree
@@ -1226,6 +1216,11 @@ namespace game::qos
 	}; static_assert(sizeof(GfxCell) == 52); // 56 in COD4
 #pragma pack(pop)
 
+	struct GfxSurface
+	{
+		// TODO
+	}; 
+
 #pragma pack(push, 4)
 	struct GfxWorld // slightly different than IW3
 	{
@@ -1238,10 +1233,10 @@ namespace game::qos
 		int indexCount;				// 24
 		unsigned __int16* indices;	// 28 ^ (is this indices?? idk...)
 		int surfaceCount;			// 32
-		GfxSurface* surfaces;	// 36 ^ (GfxWorldDpvsStatic?)
+		GfxSurface* surfaces;		// 36 ^ (GfxWorldDpvsStatic?)
 		char __pad0[20];			// 40 (unknown between here and 60)
-		int skySurfCount;			// 60
-		int* skyStartSurfs;			// 64
+		int skySurfCount;			// 60 (104 on Xbox?)
+		int* skyStartSurfs;			// 64 (108 on Xbox?)
 		GfxImage* skyImage;			// 68
 		char skySamplerState;		// 72 (i think?)
 		const char* skyDomeImageName;		// 76 (varXString used, name madeup)
@@ -1369,6 +1364,40 @@ namespace game::qos
 		char* mt_buffer;
 	};
 
+	enum DvarType
+	{
+		DVAR_TYPE_BOOL = 0x0,
+		DVAR_TYPE_FLOAT = 0x1,
+		DVAR_TYPE_FLOAT_2 = 0x2,
+		DVAR_TYPE_FLOAT_3 = 0x3,
+		DVAR_TYPE_FLOAT_4 = 0x4,
+		DVAR_TYPE_INT = 0x5,
+		DVAR_TYPE_ENUM = 0x6,
+		DVAR_TYPE_STRING = 0x7,
+		DVAR_TYPE_COLOR = 0x8,
+		DVAR_TYPE_COUNT = 0x9,
+	};
+
+	enum class dvar_type : std::int8_t
+	{
+		boolean = 0,
+		value = 1,
+		vec2 = 2,
+		vec3 = 3,
+		vec4 = 4,
+		integer = 5,
+		enumeration = 6,
+		string = 7,
+		color = 8,
+		rgb = 9 // Color without alpha
+	};
+
+	struct DvarValueStringBuf
+	{
+		const char* pad;
+		char string[12];
+	};
+
 	union DvarValue
 	{
 		bool enabled;
@@ -1377,47 +1406,62 @@ namespace game::qos
 		float value;
 		float vector[4];
 		const char* string;
+		DvarValueStringBuf stringBuf;
 		char color[4];
-	};
-
-	struct $BFBB53559BEAC4289F32B924847E59CB
-	{
-		int stringCount;
-		const char** strings;
-	};
-
-	struct $9CA192F9DB66A3CB7E01DE78A0DEA53D
-	{
-		int min;
-		int max;
-	};
-
-	struct $251C2428A496074035CACA7AAF3D55BD
-	{
-		float min;
-		float max;
 	};
 
 	union DvarLimits
 	{
-		$BFBB53559BEAC4289F32B924847E59CB enumeration;
-		$9CA192F9DB66A3CB7E01DE78A0DEA53D integer;
-		$251C2428A496074035CACA7AAF3D55BD value;
-		$251C2428A496074035CACA7AAF3D55BD vector;
+		struct enumeration
+		{
+			int stringCount;
+			const char** strings;
+		};
+		struct integer
+		{
+			int min;
+			int max;
+		};
+		struct value
+		{
+			float min;
+			float max;
+		};
+		struct vector
+		{
+			float min;
+			float max;
+		};
+	};
+
+	enum dvar_flags : std::uint16_t
+	{
+		none = 0x0,
+		saved = 0x1,
+		user_info = 0x2, // sent to server on connect or change
+		server_info = 0x4, // sent in response to front end requests
+		replicated = 0x8,
+		write_protected = 0x10,
+		latched = 0x20,
+		read_only = 0x40,
+		cheat_protected = 0x80,
+		temp = 0x100,
+		no_restart = 0x400, // do not clear when a cvar_restart is issued
+		user_created = 0x4000, // created by a set command
 	};
 
 	struct dvar_s
 	{
-		const char* name; // 0
-		const char* description; // 4
-		unsigned __int16 flags; // 8
-		char type; // 10
-		bool modified; // 11
-		DvarValue current;	// 12
-		DvarValue latched;	// 28
-		DvarValue reset;	// 44
-		DvarLimits domain;	// 60
-		bool(__cdecl* domainFunc)(dvar_s*, DvarValue); // 68
-		dvar_s* hashNext; // 72
-	}; static_assert(sizeof(dvar_s) == 76);
+		const char* name;
+		const char* description;
+		dvar_flags flags;
+		dvar_type type;
+		bool modified;
+		DvarValue current;
+		DvarValue latched;
+		DvarValue reset;
+		DvarLimits domain;
+		dvar_s* next;
+		dvar_s* hashNext;
+	};
 }

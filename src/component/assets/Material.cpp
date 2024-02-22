@@ -23,27 +23,27 @@ namespace material
 			auto iw4_asset = utils::memory::allocate<game::iw4::Material>();
 			auto iw4_asset_newSurf = utils::memory::allocate<game::iw4::GfxDrawSurf>();
 
-			iw4_asset->name = material->info.name;
-			iw4_asset->gameFlags.packed = material->info.gameFlags.packed;
-			iw4_asset->gameFlags.fields.unk7 = material->info.gameFlags.fields.unkNeededForSModelDisplay;
-			iw4_asset->gameFlags.fields.unkCastShadowMaybe = material->info.gameFlags.fields.MTL_GAMEFLAG_CASTS_SHADOW;
-			iw4_asset->sortKey = material->info.sortKey;
+			iw4_asset->name = material->name;
+			iw4_asset->gameFlags.packed = material->gameFlags.packed;
+			iw4_asset->gameFlags.fields.unk7 = material->gameFlags.fields.unkNeededForSModelDisplay;
+			iw4_asset->gameFlags.fields.unkCastShadowMaybe = material->gameFlags.fields.MTL_GAMEFLAG_CASTS_SHADOW;
+			iw4_asset->sortKey = material->sortKey;
 
-			iw4_asset->textureAtlasRowCount = material->info.textureAtlasRowCount;
-			iw4_asset->textureAtlasColumnCount = material->info.textureAtlasColumnCount;
+			iw4_asset->textureAtlasRowCount = material->textureAtlasRowCount;
+			iw4_asset->textureAtlasColumnCount = material->textureAtlasColumnCount;
 
-			iw4_asset_newSurf->fields.objectId = material->info.drawSurf.fields.objectId;
-			iw4_asset_newSurf->fields.reflectionProbeIndex = material->info.drawSurf.fields.reflectionProbeIndex;
-			iw4_asset_newSurf->fields.customIndex = material->info.drawSurf.fields.customIndex;
-			iw4_asset_newSurf->fields.materialSortedIndex = material->info.drawSurf.fields.materialSortedIndex;
-			iw4_asset_newSurf->fields.prepass = material->info.drawSurf.fields.prepass;
-			iw4_asset_newSurf->fields.sceneLightIndex = material->info.drawSurf.fields.primaryLightIndex;
-			iw4_asset_newSurf->fields.surfType = material->info.drawSurf.fields.surfType;
-			iw4_asset_newSurf->fields.primarySortKey = material->info.drawSurf.fields.primarySortKey;
+			iw4_asset_newSurf->fields.objectId = material->drawSurf.fields.objectId;
+			iw4_asset_newSurf->fields.reflectionProbeIndex = material->drawSurf.fields.reflectionProbeIndex;
+			iw4_asset_newSurf->fields.customIndex = material->drawSurf.fields.customIndex;
+			iw4_asset_newSurf->fields.materialSortedIndex = material->drawSurf.fields.materialSortedIndex;
+			iw4_asset_newSurf->fields.prepass = material->drawSurf.fields.prepass;
+			iw4_asset_newSurf->fields.sceneLightIndex = material->drawSurf.fields.primaryLightIndex;
+			iw4_asset_newSurf->fields.surfType = material->drawSurf.fields.surfType;
+			iw4_asset_newSurf->fields.primarySortKey = material->drawSurf.fields.primarySortKey;
 			iw4_asset->drawSurf.packed = iw4_asset_newSurf->packed;
 
-			iw4_asset->surfaceTypeBits = material->info.surfaceTypeBits;
-			iw4_asset->hashIndex = material->info.hashIndex;
+			iw4_asset->surfaceTypeBits = material->surfaceTypeBits;
+			iw4_asset->hashIndex = material->hashIndex;
 
 			// Set them all to -1 so they're not used if they dont exist in iw3
 			std::memset(iw4_asset->stateBitsEntry, 0xFF, sizeof(iw4_asset->stateBitsEntry));

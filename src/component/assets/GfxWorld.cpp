@@ -1,7 +1,6 @@
 #include <std_include.hpp>
 #include "loader/component_loader.hpp"
 
-/*
 #include "component/assethandler.hpp"
 #include "component/command.hpp"
 #include "component/console.hpp"
@@ -12,6 +11,9 @@
 #include "game/structs.IW4.hpp"
 
 #include <utils/memory.hpp>
+
+#define COPY_VALUE_GFXWORLD(name) iw4_asset->name = world->name
+#define COPY_ARR_GFXWORLD(name) memcpy(&iw4_asset->name, world->name, sizeof(iw4_asset->name));
 
 namespace gfxworld
 {
@@ -44,12 +46,15 @@ namespace gfxworld
 			if (world->surfaces)
 			{
 				iw4_asset->dpvs.surfaces = utils::memory::allocate_array<game::iw4::GfxSurface>(world->surfaceCount);
-				iw4_asset->dpvs.surfacesBounds = utils::memory::allocate_array < game::iw4::GfxSurfaceBounds(world->surfaceCount);
+				iw4_asset->dpvs.surfacesBounds = utils::memory::allocate_array<game::iw4::GfxSurfaceBounds(world->surfaceCount);
 
 				for (int i_ = 0; i_ < world->surfaceCount; i_++)
 				{
 					iw4_asset->dpvs.surfaces[i_].tris = world->surfaces[i_].tris;
-					iw4_asset->dpvs.surfaces[i_].material = assethandler::convert_asset_header(game::qos::ASSET_TYPE_MATERIAL, { world->surfaces[i_].material }).material;
+
+					// material
+					auto iw4_asset_mat = assethandler::convert_asset_header(game::qos::ASSET_TYPE_MATERIAL, { world->surfaces[i_].material }).material;
+					iw4_asset->dpvs.surfaces[i_].material = iw4_asset_mat;
 					
 					iw4_asset->dpvs.surfaces[i_].lightmapIndex = world->surfaces[i_].lightmapIndex;
 					iw4_asset->dpvs.surfaces[i_].reflectionProbeIndex = world->surfaces[i_].reflectionProbeIndex;
@@ -170,4 +175,3 @@ namespace gfxworld
 }
 
 REGISTER_COMPONENT(gfxworld::component)
-*/
