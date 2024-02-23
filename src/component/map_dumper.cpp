@@ -137,28 +137,31 @@ namespace map_dumper
 		{
 			api = new iw4of::api(get_params());
 
-			command::add("dumpmap", [](const command::params& params)
+			scheduler::once([&]()
 			{
-#ifndef DEBUG
-				console::error("dumpmap is not supported yet!\n");
-				return;
-#else
-				if (params.size() < 2)
+				command::add("dumpmap", [](const command::params& params)
 				{
-					console::info("USAGE: dumpmap <name>\n");
+#ifndef DEBUG
+					console::error("dumpmap is not supported yet!\n");
 					return;
-				}
+#else
+					if (params.size() < 2)
+					{
+						console::info("USAGE: dumpmap <name>\n");
+						return;
+					}
 
-				console::warn("dumpmap is not fully supported yet!\n");
+					console::warn("dumpmap is not fully supported yet!\n");
 
-				std::string name = params[1];
+					std::string name = params[1];
 
-				api->set_work_path("qosxport_out/dump");
+					api->set_work_path("qos-exp/dump");
 
-				dump_map(name);
-				console::info("map '%s' successfully exported.\n", name.data());
-			});
+					dump_map(name);
+					console::info("map '%s' successfully exported.\n", name.data());
+				});
 #endif
+			}, scheduler::main);
 		}
 	};
 }

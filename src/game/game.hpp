@@ -45,6 +45,12 @@ namespace game
 	{
 		void VectorSubtract(const qos::vec3_t& a, const qos::vec3_t& b, qos::vec3_t& out);
 	}
+
+	unsigned int Scr_GetFunctionHandle(const char* filename, const char* funcHandle);
+	void RemoveRefToObject(unsigned int obj);
+	__int16 Scr_ExecThread(int handle);
+
+	unsigned int Scr_LoadScript(const char* name);
 }
 
 #include "symbols.hpp"
