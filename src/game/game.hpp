@@ -53,6 +53,8 @@ namespace game
 	int Scr_LoadScript(const char* name);
 
 	qos::dvar_s* Dvar_RegisterBool(const char* name, bool value, int flags, const char* desc);
+
+	unsigned int Scr_GetNumParam();
 }
 
 #include "symbols.hpp"

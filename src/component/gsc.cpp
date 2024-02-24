@@ -285,10 +285,9 @@ namespace gsc
 			// hook vm_execute to redirect function calls
 			//utils::hook::jump(game::game_offset(0x1023784C), vm_execute_stub);
 
-			/*
 			add_function("replacefunc", []()
 			{
-				if (*game::scr_numParams != 2)
+				if (game::Scr_GetNumParam() != 2)
 				{
 					//game::Scr_Error("replacefunc: two parameters are required.\n");
 					console::error("replacefunc: two parameters are required.\n");
@@ -300,7 +299,6 @@ namespace gsc
 
 				set_replaced_pos(what, with);
 			});
-			*/
 
 			// reset replaced functions on game shutdown
 			scheduler::on_shutdown([]

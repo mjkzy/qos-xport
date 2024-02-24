@@ -231,4 +231,9 @@ namespace game
 
 		return answer;
 	}
+
+	unsigned int Scr_GetNumParam()
+	{
+		return *scr_numParams;
+	}
 }
