@@ -2,6 +2,7 @@
 #include "loader/component_loader.hpp"
 
 #include "console.hpp"
+#include "scheduler.hpp"
 
 #include "game/game.hpp"
 
@@ -14,52 +15,36 @@
 #define FORCE_BORDERLESS // still needs a few things fixed
 #define XLIVELESS
 
-#pragma pack(push, 4)
-struct GfxWindowParms
-{
-	char __pad[8]; // 0
-	bool fullscreen; // 8
-	int x; // 12
-	int y; // 16
-	int padding; // 20
-	int sceneWidth; // 24
-	int sceneHeight; // 28
-	int displayWidth; // 32
-	int displayHeight; // 36
-	int aaSamples; // 40
-	// 44
-};
-#pragma pack(pop)
-
 namespace patches
 {
 	namespace
 	{
+		//game::qos::dvar_s* r_borderless = nullptr;
+
 		int ret_one(DWORD*, int)
 		{
 			return 1;
 		}
 
-		HWND __stdcall create_window_ex_stub(DWORD ex_style, LPCSTR class_name, LPCSTR window_name, DWORD style, int x, int y, int width, int height, HWND parent, HMENU menu, HINSTANCE inst, LPVOID param)
+		/*
+		void apply_borderless_stub()
 		{
-			if (!strcmp(class_name, "JB_MP"))
+			int func_loc = game::game_offset(0x103BD711);
+
+			__asm
 			{
-				ex_style = 0;
-				style = WS_POPUP;
-				x = 0;
-				y = 0;
+				mov ebp, r_borderless;
+				cmp byte ptr[ebp + 0x10], 0;
+				mov ebp, 0xC80000;
+				jz not_borderless;
+				mov ebp, 0x90000000;
+
+			not_borderless:
+				push func_loc;
+				retn;
 			}
-
-			return CreateWindowExA(ex_style, class_name, window_name, style, x, y, width, height, parent, menu, inst, param);
 		}
-
-		utils::hook::detour create_window_hook;
-		void create_window_stub(GfxWindowParms* wndParms)
-		{
-			create_window_hook.invoke<void>(wndParms);
-			const auto parms = wndParms;
-			printf("");
-		}
+		*/
 	}
 
 	class component final : public component_interface
@@ -67,34 +52,25 @@ namespace patches
 	public:
 		void post_load() override
 		{
+			// un-cap fps
+			utils::hook::set<std::uint8_t>(game::game_offset(0x103F696A), 0x00);
+
 #ifdef FORCE_BORDERLESS
 			// force fullscreen to always be false
 			utils::hook::nop(game::game_offset(0x103BE1A2), 2);
 
-			// return 0 for x & y pos
+			// change window style to 0x90000000
+			utils::hook::set<std::uint8_t>(game::game_offset(0x103BD70C) + 3, 0x00);
+			utils::hook::set<std::uint8_t>(game::game_offset(0x103BD70C) + 4, 0x90);
+
 			/*
-			utils::hook::call(game::game_offset(0x103BE2AD), vidpos_register_int_stub); // vid_xpos
-			utils::hook::call(game::game_offset(0x103BE2DF), vidpos_register_int_stub); // vid_ypos
-			utils::hook::call(game::game_offset(0x103BD364), vidpos_register_int_stub); // ^
-			utils::hook::call(game::game_offset(0x103BD399), vidpos_register_int_stub); // ^
+			scheduler::once([]()
+			{
+				r_borderless = game::Dvar_RegisterBool("r_borderless", true, 0, "Remove the windows border when in windowed mode.");
+			}, scheduler::main);
 			*/
-
-			// r_createwindow
-			//create_window_hook.create(game::game_offset(0x103BD690), &create_window_stub);
-
-			// intercept import for CreateWindowExA to change window stuff
-			utils::hook::set(game::game_offset(0x1047627C), create_window_ex_stub);
 #endif
 
-			// un-cap fps
-			utils::hook::set<uint8_t>(game::game_offset(0x103F696A), 0x00);
-
-#ifdef DEBUG
-			// hook linkxassetentry to debug stuff
-			//link_xasset_entry_hook.create(game::game_offset(0x103E0640), link_xasset_entry_stub);
-#endif
-
-// support xliveless emulator
 #ifdef XLIVELESS
 			// bypass playlist + stats
 			utils::hook::jump(game::game_offset(0x10240B30), ret_one);

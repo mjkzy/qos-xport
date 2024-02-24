@@ -124,7 +124,6 @@ int WINAPI DllMain(HINSTANCE, const DWORD reason, LPVOID)
 {
 	if (reason == DLL_PROCESS_ATTACH)
 	{
-		//Sleep(4000);
 		main();
 	}
 

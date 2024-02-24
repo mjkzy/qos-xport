@@ -211,4 +211,24 @@ namespace game
 
 		return answer;
 	}
+
+	qos::dvar_s* Dvar_RegisterBool(const char* name, bool value, int flags, const char* desc)
+	{
+		int func_loc = game::game_offset(0x10278E60);
+		qos::dvar_s* answer = nullptr;
+
+		__asm
+		{
+			push flags
+			push value
+			push name
+			mov edx, desc
+			call func_loc;
+			mov answer, eax;
+			add esp, 0xC;
+			mov answer, eax
+		}
+
+		return answer;
+	}
 }
