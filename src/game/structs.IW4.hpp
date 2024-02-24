@@ -570,7 +570,6 @@ namespace game::iw4
 		unsigned char reflectionProbeIndex;
 		unsigned char primaryLightIndex;
 		unsigned char flags;
-		float bounds[2][3]; // not on IW4
 	};
 
 	struct GfxWorldDpvsStatic

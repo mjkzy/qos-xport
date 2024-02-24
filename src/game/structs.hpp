@@ -190,9 +190,7 @@ namespace game::qos
 		char category;
 		bool delayLoadPixels;
 		const char* name;
-	};
-
-	static_assert(sizeof(GfxImage) == 0x24);
+	}; static_assert(sizeof(GfxImage) == 0x24);
 
 	struct DObjAnimMat
 	{
@@ -1135,6 +1133,7 @@ namespace game::qos
 		unsigned char reflectionProbeIndex;
 		unsigned char primaryLightIndex;
 		unsigned char flags;
+		float bounds[2][3];
 	};
 
 	struct GfxAabbTreeChildren;
@@ -1233,7 +1232,7 @@ namespace game::qos
 		int indexCount;				// 24
 		unsigned __int16* indices;	// 28 ^ (is this indices?? idk...)
 		int surfaceCount;			// 32
-		GfxSurface* surfaces;		// 36 ^ (GfxWorldDpvsStatic?)
+		GfxSurface_* surfaces;		// 36 ^ (GfxWorldDpvsStatic?)
 		char __pad0[20];			// 40 (unknown between here and 60)
 		int skySurfCount;			// 60 (104 on Xbox?)
 		int* skyStartSurfs;			// 64 (108 on Xbox?)

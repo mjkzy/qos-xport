@@ -1,7 +1,6 @@
 #include <std_include.hpp>
 #include "loader/component_loader.hpp"
 
-/*
 #include "component/assethandler.hpp"
 #include "component/command.hpp"
 #include "component/console.hpp"
@@ -13,6 +12,8 @@
 
 #include <utils/memory.hpp>
 #include <utils/string.hpp>
+
+#define EXTEND_CULLING true
 
 namespace xmodel
 {
@@ -304,4 +305,3 @@ namespace xmodel
 }
 
 REGISTER_COMPONENT(xmodel::component)
-*/

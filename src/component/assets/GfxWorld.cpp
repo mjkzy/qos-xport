@@ -1,7 +1,6 @@
 #include <std_include.hpp>
 #include "loader/component_loader.hpp"
 
-/*
 #include "component/assethandler.hpp"
 #include "component/command.hpp"
 #include "component/console.hpp"
@@ -47,7 +46,7 @@ namespace gfxworld
 			if (world->surfaces)
 			{
 				iw4_asset->dpvs.surfaces = utils::memory::allocate_array<game::iw4::GfxSurface>(world->surfaceCount);
-				iw4_asset->dpvs.surfacesBounds = utils::memory::allocate_array<game::iw4::GfxSurfaceBounds(world->surfaceCount);
+				iw4_asset->dpvs.surfacesBounds = utils::memory::allocate_array<game::iw4::GfxSurfaceBounds>(world->surfaceCount);
 
 				for (int i_ = 0; i_ < world->surfaceCount; i_++)
 				{
@@ -123,9 +122,88 @@ namespace gfxworld
 
 				for (int i_ = 0; i_ < world->planes->cellCount; ++i_)
 				{
-					iw4_asset->aabbTreeCounts[i_].aabbTreeCount = world->cells[i_].aabbTree;
+					iw4_asset->aabbTreeCounts[i_].aabbTreeCount = 0; // cant find?
+
+					iw4_asset->cells[i_].bounds.compute(world->cells[i_].mins, world->cells[i_].maxs); // Verified
+					iw4_asset->cells[i_].portalCount = world->cells[i_].portalCount;
+					iw4_asset->cells[i_].reflectionProbeCount = world->cells[i_].reflectionProbeCount;
+					iw4_asset->cells[i_].reflectionProbes = world->cells[i_].reflectionProbes;
+
+					if (world->cells[i_].aabbTree)
+					{
+						iw4_asset->aabbTrees[i_].aabbTree = utils::memory::allocate_array<game::iw4::GfxAabbTree>(1); // hardcoded on QoS
+						std::memcpy(iw4_asset->aabbTrees[i_].aabbTree, world->cells[i_].aabbTree, sizeof(game::iw4::GfxAabbTree));
+
+						//static_assert(sizeof game::iw4::GfxAabbTree == sizeof game::qos::GfxAabbTree, "Size mismatch");
+						game::iw4::GfxAabbTree* iw4_cell = iw4_asset->aabbTrees[i_].aabbTree;
+						game::qos::GfxAabbTree* qos_cell = world->cells[i_].aabbTree;
+
+						iw4_cell->bounds.compute(qos_cell->mins, qos_cell->maxs); // Verified
+					}
+
+					if (world->cells[i_].portals)
+					{
+						iw4_asset->cells[i_].portals = utils::memory::allocate_array<game::iw4::GfxPortal>(world->cells[i_].portalCount);
+
+						// Map all portals, so we have them ready for the next loop (might be unnecessary, as they are mapped at runtime)
+						std::unordered_map<game::qos::GfxPortal*, game::iw4::GfxPortal*> portal_map = { { nullptr, nullptr } };
+
+						for (int j = 0; j < world->cells[i_].portalCount; ++j)
+						{
+							portal_map[&world->cells[i_].portals[j]] = &iw4_asset->cells[i_].portals[j];
+						}
+
+						for (int j = 0; j < world->cells[i_].portalCount; ++j)
+						{
+							game::qos::GfxPortal* portal = &world->cells[i_].portals[j];
+							game::iw4::GfxPortal* destPortal = &iw4_asset->cells[i_].portals[j];
+
+							destPortal->cellIndex = static_cast<unsigned short>(portal->cell - world->cells);
+							if (destPortal->cellIndex >= static_cast<unsigned short>(world->planes->cellCount))
+							{
+								console::error("Unable to calculate cell index. This should not happen!\n");
+								destPortal->cellIndex = 0;
+							}
+
+							destPortal->vertices = portal->vertices;
+							destPortal->vertexCount = portal->vertexCount;
+
+							destPortal->writable.isQueued = portal->writable.isQueued;
+							destPortal->writable.isAncestor = portal->writable.isAncestor;
+							destPortal->writable.recursionDepth = portal->writable.recursionDepth;
+							destPortal->writable.hullPointCount = portal->writable.hullPointCount;
+							destPortal->writable.hullPoints = portal->writable.hullPoints;
+
+							if (portal_map.find(portal->writable.queuedParent) != portal_map.end())
+							{
+								destPortal->writable.queuedParent = portal_map[portal->writable.queuedParent];
+							}
+							else
+							{
+								if (portal->writable.queuedParent) console::error("Unmapped portal. This shouldn't happen. Nulling it...\n");
+								destPortal->writable.queuedParent = nullptr;
+							}
+
+							std::memcpy(destPortal->plane.coeffs, portal->plane.coeffs, sizeof(destPortal->plane.coeffs));
+							std::memcpy(destPortal->hullAxis, portal->hullAxis, sizeof(destPortal->hullAxis));
+						}
+					}
 				}
 			}
+
+			iw4_asset->draw.reflectionProbeCount = world->reflectionProbeCount;
+			iw4_asset->draw.reflectionProbeTextures = utils::memory::allocate_array<game::iw4::GfxTexture>(iw4_asset->draw.reflectionProbeCount);
+			for (size_t i = 0; i < iw4_asset->draw.reflectionProbeCount; i++)
+			{
+				/*
+				if (world->reflectionProbeTextures[i].loadDef)
+				{
+					iw4_asset->draw.reflectionProbeTextures[i].loadDef = IGfxImage::ConvertLoadDef(world->reflectionProbeTextures[i].loadDef);
+				}
+				*/
+			}
+
+			iw4_asset->draw.lightmapCount = world->lightmapCount;
 
 			return { iw4_asset };
 		}
@@ -176,4 +254,3 @@ namespace gfxworld
 }
 
 REGISTER_COMPONENT(gfxworld::component)
-*/
