@@ -25,6 +25,8 @@ namespace gsc
 		std::unordered_map<const char*, const char*> replaced_functions;
 		const char* replaced_pos = nullptr;
 
+		std::unordered_map<std::string, bool> loaded_scripts;
+
 		game::qos::method_t player_get_method_stub(const char** name)
 		{
 			const auto got = scr_methods.find(*name);
@@ -50,11 +52,15 @@ namespace gsc
 
 		void load_script(const std::string& name)
 		{
+			const auto custom_script_name = name + ".gsc"s;
+
+			loaded_scripts[custom_script_name] = false;
 			auto script = game::Scr_LoadScript(name.data());
 			if (!script)
 			{
 				return;
 			}
+			loaded_scripts[custom_script_name] = true; // loaded
 
 			const auto main_handle = game::Scr_GetFunctionHandle(name.data(), "main");
 			const auto init_handle = game::Scr_GetFunctionHandle(name.data(), "init");
@@ -216,6 +222,27 @@ namespace gsc
 				jmp loc_1
 			}
 		}
+
+		utils::hook::detour scr_add_source_buffer_hook;
+		char* scr_add_source_buffer_stub(const char* file_name, int code_pos)
+		{
+			if (!loaded_scripts.contains(file_name))
+			{
+				return scr_add_source_buffer_hook.invoke<char*>(file_name, code_pos);
+			}
+
+			std::string data;
+			if (filesystem::read_file(file_name, &data))
+			{
+				char* new_data = new char[data.size() + 1];
+				std::memcpy(new_data, data.data(), data.size());
+				new_data[data.size()] = '\0';
+				return new_data;
+			}
+
+			console::error("Failed to get raw buffer for script '%s'\n", file_name);
+			return nullptr;
+		}
 	}
 
 	void add_function(const char* name, game::qos::function_t func, int type)
@@ -252,6 +279,9 @@ namespace gsc
 			utils::hook::call(game::game_offset(0x101AD1FA), g_load_structs_stub); // execute main handles (Scr_LoadGameType is inlined)
 			utils::hook::call(game::game_offset(0x101AD27A), save_reigstered_weapons_stub); // execute init handles (Scr_StartupGameType is inlined)
 
+			// manually load buffer for custom scripts since stuff seems bonk?? (probably a proper way to do this)
+			scr_add_source_buffer_hook.create(game::game_offset(0x1022DEA0), scr_add_source_buffer_stub);
+
 			// hook vm_execute to redirect function calls
 			//utils::hook::jump(game::game_offset(0x1023784C), vm_execute_stub);
 
@@ -276,6 +306,7 @@ namespace gsc
 			scheduler::on_shutdown([]
 			{
 				replaced_functions.clear();
+				loaded_scripts.clear();
 			});
 		}
 	};

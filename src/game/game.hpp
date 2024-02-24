@@ -50,7 +50,7 @@ namespace game
 	void RemoveRefToObject(unsigned int obj);
 	__int16 Scr_ExecThread(int handle);
 
-	unsigned int Scr_LoadScript(const char* name);
+	int Scr_LoadScript(const char* name);
 }
 
 #include "symbols.hpp"

@@ -191,17 +191,16 @@ namespace game
 		{
 			mov eax, handle;
 			call func_loc;
-			add esp, 4;
 			mov answer, ax;
 		}
 
 		return answer;
 	}
 
-	unsigned int Scr_LoadScript(const char* name)
+	int Scr_LoadScript(const char* name)
 	{
 		int func_loc = game::game_offset(0x1022E7C0);
-		unsigned int answer = 0;
+		int answer = 0;
 
 		__asm
 		{
