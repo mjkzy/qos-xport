@@ -236,4 +236,21 @@ namespace game
 	{
 		return *scr_numParams;
 	}
+
+	char* Scr_ReadFile_FastFile(const char* file_name, int code_pos)
+	{
+		int func_loc = game::game_offset(0x1022DF13);
+		char* answer = nullptr;
+
+		__asm
+		{
+			push code_pos
+			mov eax, file_name
+			call func_loc;
+			add esp, 0x4;
+			mov answer, eax
+		}
+
+		return answer;
+	}
 }

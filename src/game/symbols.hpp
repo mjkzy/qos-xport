@@ -6,7 +6,8 @@ namespace game
 {
 	WEAK symbol<void(int channel, const char* fmt, ...)> Com_Printf{ game_offset(0x103F6400) };
 
-	WEAK symbol<qos::XAssetHeader (qos::XAssetType type, const char* name)> DB_FindXAssetHeader{ game_offset(0x103E2260) };
+	WEAK symbol<qos::XAssetHeader(qos::XAssetType type, const char* name)> DB_FindXAssetHeader{ game_offset(0x103E2260) };
+	WEAK symbol<qos::XAssetHeader(qos::XAssetType type, const char* name, int create_default)> DB_FindXAssetHeader_Internal{ game_offset(0x103E1EE0) };
 
 	WEAK symbol<int(const char* name)> Scr_LoadScript_{ game_offset(0x1022E7C0) };
 
