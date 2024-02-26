@@ -34,10 +34,8 @@ namespace gfxworld
 			iw4_asset->planeCount = world->planeCount;
 
 			// planes
-			iw4_asset->dpvsPlanes.cellCount = world->planes->cellCount;
-			memcpy(iw4_asset->dpvsPlanes.planes, world->planes->planes, 4);
-			memcpy(iw4_asset->dpvsPlanes.nodes, world->planes->nodes, 4);
-			memcpy(iw4_asset->dpvsPlanes.sceneEntCellBits, world->planes->sceneEntCellBits, 4);
+			auto qos_planes = reinterpret_cast<game::iw4::GfxWorldDpvsPlanes*>(world->planes);
+			iw4_asset->dpvsPlanes = *qos_planes;
 
 			iw4_asset->nodeCount = world->nodeCount;
 			// TODO: nodes?
@@ -427,7 +425,6 @@ namespace gfxworld
 				}
 			}
 
-			/*
 			if (world->smodelDrawInsts)
 			{
 				iw4_asset->dpvs.smodelDrawInsts = utils::memory::allocate_array<game::iw4::GfxStaticModelDrawInst>(world->smodelCount);
@@ -471,18 +468,18 @@ namespace gfxworld
 					iw4_asset->dpvs.smodelDrawInsts[i].lightingHandle = world->smodelDrawInsts[i].lightingHandle;
 					iw4_asset->dpvs.smodelDrawInsts[i].flags = 0;
 
-					if (world->smodelDrawInsts[i].flags & Game::IW3::STATIC_MODEL_FLAG_NO_SHADOW)
+					if (world->smodelDrawInsts[i].flags & game::qos::STATIC_MODEL_FLAG_NO_SHADOW)
 					{
 						// Confirmed to be the same in the rendering functions
 						// Check R_AddAllStaticModelSurfacesSpotShadow in both iw3 and iw4
 
-						iw4_asset->dpvs.smodelDrawInsts[i].flags |= Game::IW4::STATIC_MODEL_FLAG_NO_CAST_SHADOW;
+						iw4_asset->dpvs.smodelDrawInsts[i].flags |= game::iw4::STATIC_MODEL_FLAG_NO_CAST_SHADOW;
 
 						// aaaaand NO it's not !
 						// For some reason while being used in the same place for the same thing AFAIK,
 						// setting this to the "correct value" in iw4 results in blocky smodel shadows!
 						// Unless we keep the iw3 flag in (which should be non existent in iw4!)
-						iw4_asset->dpvs.smodelDrawInsts[i].flags |= Game::IW3::STATIC_MODEL_FLAG_NO_SHADOW;
+						iw4_asset->dpvs.smodelDrawInsts[i].flags |= game::qos::STATIC_MODEL_FLAG_NO_SHADOW;
 					}
 
 					if (world->smodelInsts)
@@ -493,10 +490,48 @@ namespace gfxworld
 						//// Whenever a model needs ground lighting in iw4, it has to specify it
 						if (iw4_asset->dpvs.smodelDrawInsts[i].groundLighting.packed > 0)
 						{
-							iw4_asset->dpvs.smodelDrawInsts[i].flags |= Game::IW4::STATIC_MODEL_FLAG_GROUND_LIGHTING;
+							iw4_asset->dpvs.smodelDrawInsts[i].flags |= game::iw4::STATIC_MODEL_FLAG_GROUND_LIGHTING;
 						}
 					}
 				}
+			}
+
+#if USE_IW3_SORTKEYS
+			// IW3 values
+			iw4_asset->sortKeyLitDecal = 9;
+			iw4_asset->sortKeyEffectDecal = 29;
+			iw4_asset->sortKeyEffectAuto = 48;
+			iw4_asset->sortKeyDistortion = 0;
+#else
+			iw4_asset->sortKeyLitDecal = 0x6;
+			iw4_asset->sortKeyEffectDecal = 0x27;
+			iw4_asset->sortKeyEffectAuto = 0x30;
+			iw4_asset->sortKeyDistortion = 0x2b;
+#endif
+
+			int base_index = 0;
+			iw4_asset->draw.indices = utils::memory::allocate_array<unsigned short>(iw4_asset->draw.indexCount);
+			for (unsigned int i = 0; i < iw4_asset->surfaceCount; ++i)
+			{
+				std::memcpy(&iw4_asset->draw.indices[base_index], &world->indices[iw4_asset->dpvs.surfaces[i].tris.baseIndex], iw4_asset->dpvs.surfaces[i].tris.triCount * 6);
+				iw4_asset->dpvs.surfaces[i].tris.baseIndex = base_index;
+				base_index += iw4_asset->dpvs.surfaces[i].tris.triCount * 3;
+			}
+
+			if (base_index != iw4_asset->draw.indexCount)
+			{
+				console::warn("Warning: Didn't sort all indicies for worldDraw\n");
+			}
+
+			// Specify that it's a custom map
+			iw4_asset->checksum = 0xC0D40001;
+
+			/*
+			auto smodelsFixMethod = Game::Dvar_FindVar("iw3x_smodels_fix_method");
+			if (smodelsFixMethod)
+			{
+				auto method = std::stoi(smodelsFixMethod->current.string);
+				IGfxWorld::RemoveIncompatibleModelsForIW4(&map, method);
 			}
 			*/
 
