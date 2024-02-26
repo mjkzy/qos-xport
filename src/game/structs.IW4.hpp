@@ -656,18 +656,6 @@ namespace game::iw4
 		char* dynEntVisData[2][3];
 	};
 
-	struct XModelDrawInfo
-	{
-		unsigned __int16 lod;
-		unsigned __int16 surfId;
-	};
-
-	struct GfxSceneDynModel
-	{
-		XModelDrawInfo info;
-		unsigned __int16 dynEntId;
-	};
-
 	struct GfxLightGridEntry
 	{
 		unsigned __int16 colorsIndex;
@@ -729,7 +717,7 @@ namespace game::iw4
 		GfxImage* outdoorImage; // 412
 		unsigned int* cellCasterBits; // 416
 		unsigned int* cellHasSunLitSurfsBits; // 420
-		GfxSceneDynModel* sceneDynModel; // 424
+		qos::GfxSceneDynModel* sceneDynModel; // 424
 		qos::GfxSceneDynBrush* sceneDynBrush; // 428
 		unsigned int* primaryLightEntityShadowVis; // 432
 		unsigned int* primaryLightDynEntShadowVis[2]; // 436

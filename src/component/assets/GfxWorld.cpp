@@ -7,6 +7,8 @@
 #include "component/map_dumper.hpp"
 #include "component/scheduler.hpp"
 
+//#include "component/assets/gfximage.hpp";
+
 #include "game/game.hpp"
 #include "game/structs.IW4.hpp"
 
@@ -195,15 +197,308 @@ namespace gfxworld
 			iw4_asset->draw.reflectionProbeTextures = utils::memory::allocate_array<game::iw4::GfxTexture>(iw4_asset->draw.reflectionProbeCount);
 			for (size_t i = 0; i < iw4_asset->draw.reflectionProbeCount; i++)
 			{
-				/*
-				if (world->reflectionProbeTextures[i].loadDef)
+				const auto load_def = world->reflectionProbes[i].reflectionImage->texture.loadDef;
+				if (load_def != nullptr)
 				{
-					iw4_asset->draw.reflectionProbeTextures[i].loadDef = IGfxImage::ConvertLoadDef(world->reflectionProbeTextures[i].loadDef);
+					//iw4_asset->draw.reflectionProbeTextures[i].loadDef = gfximage::ConvertLoadDef(load_def);
 				}
-				*/
 			}
 
 			iw4_asset->draw.lightmapCount = world->lightmapCount;
+			iw4_asset->draw.lightmaps = utils::memory::allocate_array<game::iw4::GfxLightmapArray>(iw4_asset->draw.lightmapCount);
+			for (int i = 0; i < iw4_asset->draw.lightmapCount; i++)
+			{
+				auto iw4_lightmap = &iw4_asset->draw.lightmaps[i];
+				auto qos_lightmap = &world->lightmaps[i];
+
+				if (qos_lightmap->primary)
+				{
+					iw4_lightmap->primary = assethandler::convert_asset_header(game::qos::ASSET_TYPE_IMAGE, { qos_lightmap->primary }).image;
+				}
+
+				if (qos_lightmap->secondary)
+				{
+					iw4_lightmap->secondary = assethandler::convert_asset_header(game::qos::ASSET_TYPE_IMAGE, { qos_lightmap->secondary }).image;
+				}
+			}
+
+			// can't find it in QoS atm, wtf?
+			/*
+			if (world->lightmapPrimaryTextures->data)
+			{
+				iw4_asset->draw.lightmapPrimaryTextures = IGfxImage::ConvertTexture(world->lightmapPrimaryTextures);
+			}
+			else
+			{
+				iw4_asset->draw.lightmapPrimaryTextures = LocalAllocator.Allocate<game::iw4::GfxTexture>();
+			}
+			*/
+			iw4_asset->draw.lightmapPrimaryTextures = utils::memory::allocate<game::iw4::GfxTexture>();
+			iw4_asset->draw.lightmapSecondaryTextures = utils::memory::allocate<game::iw4::GfxTexture>();
+
+			if (world->outdoorImage)
+			{
+				iw4_asset->draw.outdoorImage = assethandler::convert_asset_header(game::qos::ASSET_TYPE_IMAGE, { world->outdoorImage }).image;
+			}
+
+			iw4_asset->draw.vertexCount = world->vertexCount;
+			memcpy(&iw4_asset->draw.vd, &world->vd, sizeof(game::iw4::GfxWorldVertexData));
+			iw4_asset->draw.vertexLayerDataSize = world->vertexLayerDataSize;
+			memcpy(&iw4_asset->draw.vld, &world->vld, sizeof(game::iw4::GfxWorldVertexLayerData));
+			iw4_asset->draw.indexCount = world->indexCount;
+			iw4_asset->draw.indices = world->indices;
+
+			// Split reflection images and probes
+			if (world->reflectionProbes)
+			{
+				iw4_asset->draw.reflectionImages = utils::memory::allocate_array<game::iw4::GfxImage*>(world->reflectionProbeCount);
+				iw4_asset->draw.reflectionProbes = utils::memory::allocate_array<game::iw4::GfxReflectionProbe>(world->reflectionProbeCount);
+				iw4_asset->draw.reflectionProbeCount = world->reflectionProbeCount;
+
+				for (unsigned int i = 0; i < world->reflectionProbeCount; ++i)
+				{
+					iw4_asset->draw.reflectionImages[i] = assethandler::convert_asset_header(game::qos::ASSET_TYPE_IMAGE, { world->reflectionProbes[i].reflectionImage }).image;
+
+					if (world->reflectionProbes[i].reflectionImage)
+					{
+						assert(iw4_asset->draw.reflectionImages[i]);
+					}
+
+					std::memcpy(iw4_asset->draw.reflectionProbes[i].origin, world->reflectionProbes[i].origin, sizeof(iw4_asset->draw.reflectionProbes[i].origin));
+				}
+			}
+
+			// lightGrid
+			iw4_asset->lightGrid.hasLightRegions;
+			memcpy(&iw4_asset->lightGrid + 4, &world->lightGrid, sizeof(game::qos::GfxLightGrid));
+
+			iw4_asset->modelCount = world->modelCount;
+
+			const auto should_add_carepackages = true;
+			if (world->models)
+			{
+				// We're about to add two brushmodels here, which are identical : one for the airdrop package and one for the 4-streak care package
+				iw4_asset->models = utils::memory::allocate_array<game::iw4::GfxBrushModel>(world->modelCount + (should_add_carepackages ? 2 : 0));
+
+				for (int i = 0; i < world->modelCount; ++i)
+				{
+					iw4_asset->models[i].writable.bounds.compute(world->models[i].writable.mins, world->models[i].writable.maxs); // Irrelevant, runtime data
+					iw4_asset->models[i].bounds.compute(world->models[i].bounds[0], world->models[i].bounds[1]); // Verified
+
+					float* halfSize = iw4_asset->models[i].bounds.halfSize;
+					iw4_asset->models[i].radius = static_cast<float>(std::sqrt(std::pow(halfSize[0], 2) + std::pow(halfSize[1], 2) + std::pow(halfSize[2], 2)));
+
+					iw4_asset->models[i].surfaceCount = world->models[i].surfaceCount;
+					iw4_asset->models[i].startSurfIndex = world->models[i].startSurfIndex;
+					iw4_asset->models[i].surfaceCountNoDecal = world->models[i].surfaceCountNoDecal;
+				}
+
+				if (should_add_carepackages)
+				{
+					auto index = world->modelCount;
+
+					// Create the care packages (TODO);
+					game::iw4::GfxBrushModel care_package{};
+					//game::iw4::Bounds packageBounds = IclipMap_t::MakeCarePackageBounds();
+
+					//care_package.bounds = packageBounds;
+
+					care_package.radius = 47.f;
+					care_package.surfaceCount = 0;
+					care_package.surfaceCountNoDecal = 0;
+					care_package.startSurfIndex = std::numeric_limits<unsigned short>().max();
+
+					// Airdrop package
+					iw4_asset->models[index++] = care_package;
+
+					// K4 care package
+					iw4_asset->models[index++] = care_package;
+
+					// Add 2 to modelcount because we just added two brushmodels
+					iw4_asset->modelCount += 2;
+
+					// and that should be it?
+				}
+			}
+
+			iw4_asset->bounds.compute(world->mins, world->maxs);
+
+			iw4_asset->checksum = world->checksum;
+			iw4_asset->materialMemoryCount = world->materialMemoryCount;
+
+			iw4_asset->materialMemory = utils::memory::allocate_array<game::iw4::MaterialMemory>(world->materialMemoryCount);
+			for (int i = 0; i < world->materialMemoryCount; i++)
+			{
+				iw4_asset->materialMemory[i].memory = world->materialMemory[i].memory;
+				iw4_asset->materialMemory[i].material = assethandler::convert_asset_header(game::qos::ASSET_TYPE_MATERIAL, { world->materialMemory[i].material }).material;
+			}
+
+
+			static_assert(sizeof iw4_asset->sun == sizeof world->sun);
+			std::memcpy(&iw4_asset->sun, &world->sun, sizeof iw4_asset->sun);
+			if (iw4_asset->sun.flareMaterial)
+			{
+				iw4_asset->sun.flareMaterial = assethandler::convert_asset_header(game::qos::ASSET_TYPE_MATERIAL, { world->sun.flareMaterial }).material;
+			}
+
+			if (iw4_asset->sun.spriteMaterial)
+			{
+				iw4_asset->sun.spriteMaterial = assethandler::convert_asset_header(game::qos::ASSET_TYPE_MATERIAL, { world->sun.spriteMaterial }).material;
+			}
+
+			std::memcpy(iw4_asset->outdoorLookupMatrix, world->outdoorLookupMatrix, sizeof(iw4_asset->outdoorLookupMatrix));
+			iw4_asset->outdoorImage = assethandler::convert_asset_header(game::qos::ASSET_TYPE_IMAGE, { world->outdoorImage }).image;
+
+			iw4_asset->cellCasterBits = world->cellCasterBits;
+			iw4_asset->cellHasSunLitSurfsBits = reinterpret_cast<unsigned int*>(1); // This mustn't be null!
+
+			iw4_asset->sceneDynModel = world->sceneDynModel;
+			iw4_asset->sceneDynBrush = world->sceneDynBrush;
+
+			iw4_asset->primaryLightEntityShadowVis = world->primaryLightEntityShadowVis;
+			iw4_asset->primaryLightDynEntShadowVis[0] = world->primaryLightDynEntShadowVis[0];
+			iw4_asset->primaryLightDynEntShadowVis[1] = world->primaryLightDynEntShadowVis[1];
+			iw4_asset->nonSunPrimaryLightForModelDynEnt = world->nonSunPrimaryLightForModelDynEnt;
+
+			iw4_asset->shadowGeom = world->shadowGeom;
+			iw4_asset->lightRegion = world->lightRegion;
+
+			iw4_asset->dpvs.smodelCount = world->smodelCount;
+			iw4_asset->dpvs.staticSurfaceCount = 0; //world->staticSurfaceCount;
+			iw4_asset->dpvs.staticSurfaceCountNoDecal = 0; //world->staticSurfaceCountNoDecal;
+
+			// can't find these at all in QoS :/
+			iw4_asset->dpvs.litOpaqueSurfsBegin = 0; //world->litSurfsBegin;
+			iw4_asset->dpvs.litOpaqueSurfsEnd = 0; //world->decalSurfsEnd;
+
+			// these don't exist in iw3/qos so skip
+			iw4_asset->dpvs.litTransSurfsBegin = 0; //world->decalSurfsEnd;
+			iw4_asset->dpvs.litTransSurfsEnd = 0; //world->decalSurfsEnd;
+
+			// Skip those as well
+			iw4_asset->dpvs.shadowCasterSurfsBegin = 0; //world->decalSurfsEnd;
+			iw4_asset->dpvs.shadowCasterSurfsEnd = 0; //world->decalSurfsEnd;
+
+			iw4_asset->dpvs.emissiveSurfsBegin = 0; //world->emissiveSurfsBegin;
+			iw4_asset->dpvs.emissiveSurfsEnd = 0; //world->emissiveSurfsEnd;
+			iw4_asset->dpvs.smodelVisDataCount = 0; //world->smodelVisDataCount;
+			iw4_asset->dpvs.surfaceVisDataCount = 0; //world->surfaceVisDataCount;
+
+			std::memcpy(iw4_asset->dpvs.smodelVisData, world->smodelVisData, sizeof(iw4_asset->dpvs.smodelVisData));	// 16 -> 12
+			std::memcpy(iw4_asset->dpvs.surfaceVisData, world->surfaceVisData, sizeof(iw4_asset->dpvs.surfaceVisData)); // 16 -> 12
+
+			iw4_asset->dpvs.sortedSurfIndex = world->shadowGeom->sortedSurfIndex;
+
+			if (world->smodelInsts)
+			{
+				iw4_asset->dpvs.smodelInsts = utils::memory::allocate_array<game::iw4::GfxStaticModelInst>(world->smodelCount);
+
+				for (unsigned int i = 0; i < world->smodelCount; ++i)
+				{
+					memcpy(&iw4_asset->dpvs.smodelInsts[i].bounds, &world->smodelInsts[i].bounds, sizeof(iw4_asset->dpvs.smodelInsts[i].bounds)); // Verified
+
+					// this is CORRECT! Lighting origin is the place where the light grid gets sampled, and it must be the object's position!
+					// This is how iw3 does it!
+					// Check out 0x62EFF0 (iw3) 
+					// and 0x524C80 (iw4)
+					// (R_SetStaticModelLighting)
+					iw4_asset->dpvs.smodelInsts[i].lightingOrigin[0] = iw4_asset->dpvs.smodelInsts[i].bounds.midPoint[0];
+					iw4_asset->dpvs.smodelInsts[i].lightingOrigin[1] = iw4_asset->dpvs.smodelInsts[i].bounds.midPoint[1];
+					iw4_asset->dpvs.smodelInsts[i].lightingOrigin[2] = iw4_asset->dpvs.smodelInsts[i].bounds.midPoint[2];
+				}
+			}
+
+			if (world->surfaces)
+			{
+				iw4_asset->dpvs.surfaces = utils::memory::allocate_array<game::iw4::GfxSurface>(world->surfaceCount);
+				iw4_asset->dpvs.surfacesBounds = utils::memory::allocate_array<game::iw4::GfxSurfaceBounds>(world->surfaceCount);
+
+				for (int i = 0; i < world->surfaceCount; ++i)
+				{
+					iw4_asset->dpvs.surfaces[i].tris = world->surfaces[i].tris;
+					iw4_asset->dpvs.surfaces[i].material = assethandler::convert_asset_header(game::qos::ASSET_TYPE_MATERIAL, {world->surfaces[i].material}).material;
+
+					iw4_asset->dpvs.surfaces[i].lightmapIndex = world->surfaces[i].lightmapIndex;
+					iw4_asset->dpvs.surfaces[i].reflectionProbeIndex = world->surfaces[i].reflectionProbeIndex;
+					iw4_asset->dpvs.surfaces[i].primaryLightIndex = world->surfaces[i].primaryLightIndex;
+					iw4_asset->dpvs.surfaces[i].flags = world->surfaces[i].flags;
+
+					iw4_asset->dpvs.surfacesBounds[i].bounds.compute(world->surfaces[i].bounds[0], world->surfaces[i].bounds[1]); // Verified
+				}
+			}
+
+			/*
+			if (world->smodelDrawInsts)
+			{
+				iw4_asset->dpvs.smodelDrawInsts = utils::memory::allocate_array<game::iw4::GfxStaticModelDrawInst>(world->smodelCount);
+
+				for (unsigned int i = 0; i < world->smodelCount; ++i)
+				{
+					std::memcpy(iw4_asset->dpvs.smodelDrawInsts[i].placement.origin, world->smodelDrawInsts[i].placement.origin, sizeof(iw4_asset->dpvs.smodelDrawInsts[i].placement.origin));
+					std::memcpy(iw4_asset->dpvs.smodelDrawInsts[i].placement.axis, world->smodelDrawInsts[i].placement.axis, sizeof(iw4_asset->dpvs.smodelDrawInsts[i].placement.axis));
+
+					iw4_asset->dpvs.smodelDrawInsts[i].cacheId[0] = 0;
+					iw4_asset->dpvs.smodelDrawInsts[i].cacheId[1] = 0;
+					iw4_asset->dpvs.smodelDrawInsts[i].cacheId[2] = 0;
+					iw4_asset->dpvs.smodelDrawInsts[i].cacheId[3] = 0;
+
+					iw4_asset->dpvs.smodelDrawInsts[i].placement.scale = world->smodelDrawInsts[i].placement.scale;
+					iw4_asset->dpvs.smodelDrawInsts[i].model = assethandler::convert_asset_header(game::qos::ASSET_TYPE_XMODEL, { world->smodelDrawInsts[i].model }).model;
+
+
+					float qos_cull_dist = world->smodelDrawInsts[i].cullDist;
+
+#if EXTEND_CULLING
+					// Double cull distance so it looks nicer in iw4
+					qos_cull_dist *= 2;
+#endif
+
+					unsigned short iw4_cull_dist = 0;
+
+					if (qos_cull_dist > std::numeric_limits<unsigned short>().max())
+					{
+						iw4_cull_dist = std::numeric_limits<unsigned short>().max();
+					}
+					else
+					{
+						iw4_cull_dist = static_cast<unsigned short>(qos_cull_dist);
+					}
+
+					iw4_asset->dpvs.smodelDrawInsts[i].cullDist = iw4_cull_dist;
+
+					iw4_asset->dpvs.smodelDrawInsts[i].reflectionProbeIndex = world->smodelDrawInsts[i].reflectionProbeIndex;
+					iw4_asset->dpvs.smodelDrawInsts[i].primaryLightIndex = world->smodelDrawInsts[i].primaryLightIndex;
+					iw4_asset->dpvs.smodelDrawInsts[i].lightingHandle = world->smodelDrawInsts[i].lightingHandle;
+					iw4_asset->dpvs.smodelDrawInsts[i].flags = 0;
+
+					if (world->smodelDrawInsts[i].flags & Game::IW3::STATIC_MODEL_FLAG_NO_SHADOW)
+					{
+						// Confirmed to be the same in the rendering functions
+						// Check R_AddAllStaticModelSurfacesSpotShadow in both iw3 and iw4
+
+						iw4_asset->dpvs.smodelDrawInsts[i].flags |= Game::IW4::STATIC_MODEL_FLAG_NO_CAST_SHADOW;
+
+						// aaaaand NO it's not !
+						// For some reason while being used in the same place for the same thing AFAIK,
+						// setting this to the "correct value" in iw4 results in blocky smodel shadows!
+						// Unless we keep the iw3 flag in (which should be non existent in iw4!)
+						iw4_asset->dpvs.smodelDrawInsts[i].flags |= Game::IW3::STATIC_MODEL_FLAG_NO_SHADOW;
+					}
+
+					if (world->smodelInsts)
+					{
+						iw4_asset->dpvs.smodelDrawInsts[i].groundLighting = world->smodelInsts[i].groundLighting;
+
+						//// Grass needs 0x20 otherwise it doesn't read data from the lightmap and it's full bright !
+						//// Whenever a model needs ground lighting in iw4, it has to specify it
+						if (iw4_asset->dpvs.smodelDrawInsts[i].groundLighting.packed > 0)
+						{
+							iw4_asset->dpvs.smodelDrawInsts[i].flags |= Game::IW4::STATIC_MODEL_FLAG_GROUND_LIGHTING;
+						}
+					}
+				}
+			}
+			*/
 
 			return { iw4_asset };
 		}
@@ -227,7 +522,7 @@ namespace gfxworld
 					const auto name = params[1];
 
 					auto header = game::DB_FindXAssetHeader(game::qos::ASSET_TYPE_GFXWORLD, name);
-					if (!header.comWorld)
+					if (!header.gfxWorld)
 					{
 						console::error("dumpgfxworld failed on '%s'\n", name);
 						return;

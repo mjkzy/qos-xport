@@ -1201,17 +1201,6 @@ namespace game::qos
 		int* cullGroups; // 40
 		unsigned char reflectionProbeCount; // 44
 		unsigned char* reflectionProbes; // 48
-
-		/*
-		int aabbTreeCount; // 24
-		GfxAabbTree* aabbTree; // 28
-		int portalCount; // 32
-		GfxPortal* portals; // 36
-		int cullGroupCount; // 40
-		int* cullGroups; // 44
-		unsigned char reflectionProbeCount; // 48
-		unsigned char* reflectionProbes; // 49
-		*/
 	}; static_assert(sizeof(GfxCell) == 52); // 56 in COD4
 #pragma pack(pop)
 
@@ -1219,6 +1208,12 @@ namespace game::qos
 	{
 		// TODO
 	}; 
+
+	struct GfxStaticModelInst
+	{
+		Bounds bounds; // 0
+		char __pad[8]; // 24
+	}; static_assert(sizeof(GfxStaticModelInst) == 32);
 
 #pragma pack(push, 4)
 	struct GfxWorld // slightly different than IW3
@@ -1249,13 +1244,13 @@ namespace game::qos
 		unsigned int sunPrimaryLightIndex;	// 248
 		unsigned int primaryLightCount;		// 252
 		int __pad3;							// 256
-		int cullGroupCount;						// 260 (shows 0 debugging)
-		unsigned char reflectionProbeCount;		// 264
-		GfxReflectionProbe* reflectionProbes;	// 268
+		int cullGroupCount;							// 260 (shows 0 debugging)
+		unsigned char reflectionProbeCount;			// 264
+		GfxReflectionProbe* reflectionProbes;		// 268
 		void* cullGroups;							// 272 (from GfxWorldDpvsStatic?)
 		int smodelCount;							// 276 ^ (cellCount?)
 		GfxStaticModelDrawInst* smodelDrawInsts;	// 280 ^
-		void* smodelInsts;							// 284 ?
+		GfxStaticModelInst* smodelInsts;							// 284 ?
 		int cellBitsCount;			// 288
 		int unk_2;					// 292 (some sort of count variable)
 		GfxCell* cells;				// 296
@@ -1288,8 +1283,7 @@ namespace game::qos
 		void* gfxDynEntCellRef2;			// 684 ^
 		GfxSceneDynModel* sceneDynModel;	// 688
 		GfxSceneDynBrush* sceneDynBrush;	// 692
-		short primaryLightForModelDynEnt;				// 696
-		short idk;										// 698
+		char* nonSunPrimaryLightForModelDynEnt;				// 696
 		unsigned int* primaryLightEntityShadowVis;		// 700
 		unsigned int* primaryLightDynEntShadowVis[2];	// 704 (708)
 		GfxShadowGeometry* shadowGeom;	// 712
