@@ -40,15 +40,15 @@ namespace gfximage
 
 		int translate_flags(int iw3Flags)
 		{
-			int iw4Flags = 0;
+			int iw4_flags = 0;
 
-			const auto translate_flags_func = [&](game::qos::file_image_flags_t sourceFlag, game::iw4::file_image_flags_t targetFlag)
+			const auto translate_flags_func = [&](game::qos::file_image_flags_t source_flag, game::iw4::file_image_flags_t target_flag)
+			{
+				if (iw3Flags & source_flag)
 				{
-					if (iw3Flags & sourceFlag)
-					{
-						iw4Flags |= targetFlag;
-					}
-				};
+					iw4_flags |= target_flag;
+				}
+			};
 
 			translate_flags_func(game::qos::IMG_FLAG_NOPICMIP, game::iw4::IMG_FLAG_NOPICMIP);
 			translate_flags_func(game::qos::IMG_FLAG_NOMIPMAPS, game::iw4::IMG_FLAG_NOMIPMAPS);
@@ -64,10 +64,10 @@ namespace gfximage
 			//translate_flags_func(game::qos::IMG_FLAG_RENDER_TARGET,  game::iw4::IMG_FLAG_RENDER_TARGET);
 			//translate_flags_func(game::qos::IMG_FLAG_SYSTEMMEM,      game::iw4::IMG_FLAG_SYSTEMMEM);
 
-			//iw4Flags |= game::iw4::IMG_FLAG_ALPHA_WEIGHTED_COLORS;
-			//iw4Flags |= game::iw4::IMG_FLAG_GAMMA_SRGB;
+			//iw4_flags |= game::iw4::IMG_FLAG_ALPHA_WEIGHTED_COLORS;
+			//iw4_flags |= game::iw4::IMG_FLAG_GAMMA_SRGB;
 
-			return iw4Flags;
+			return iw4_flags;
 		}
 
 		game::iw4::GfxImageLoadDef* convert_load_def(game::qos::GfxImageLoadDef* load_def)

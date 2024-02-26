@@ -175,22 +175,32 @@ namespace game::qos
 		int platform[2];
 	};
 
+	static_assert(sizeof(unsigned __int16) == 2);
+
+	// TODO: needs fixing
+#pragma pack(push, 4)
 	struct GfxImage
 	{
-		char mapType;
-		GfxTexture texture;
-		Picmip picmip;
-		bool noPicmip;
-		char semantic;
-		char track;
-		CardMemory cardMemory;
-		unsigned __int16 width;
-		unsigned __int16 height;
-		unsigned __int16 depth;
-		char category;
-		bool delayLoadPixels;
-		const char* name;
-	}; static_assert(sizeof(GfxImage) == 0x24);
+		unsigned char mapType;		// 0
+		GfxTexture texture;			// 4
+		Picmip picmip;				// 8
+		bool noPicmip;				// 10
+		unsigned char semantic;		// 14
+		char track;					// 18
+		CardMemory cardMemory;		// 22
+		unsigned __int16 width;		// 30
+		unsigned __int16 height;	// 22
+		unsigned __int16 depth;		// 26
+		char category;				// 28
+		char delayLoadPixels;		// 29
+		short idrk;					// 30
+		const char* name;			// 32
+		// 36
+	}; static_assert(sizeof(GfxImage) == 36);
+#pragma pack(pop)
+	static_assert(offsetof(GfxImage, texture) == 4);
+	static_assert(offsetof(GfxImage, noPicmip) == 10);
+	static_assert(offsetof(GfxImage, name) == 32);
 
 	struct DObjAnimMat
 	{
@@ -211,10 +221,13 @@ namespace game::qos
 		unsigned int packed;
 	};
 
+	static_assert(sizeof(unsigned int) == 4);
+	static_assert(sizeof(unsigned char[4]) == 4);
+
 	union GfxColor
 	{
-		unsigned int packed;
-		unsigned char array[4];
+		unsigned int packed; // 0
+		unsigned char array[4]; // 4
 	};
 
 	union PackedUnitVec
@@ -1040,7 +1053,10 @@ namespace game::qos
 		float cullDist; // 0
 		GfxPackedPlacement placement; // 4
 		XModel* model;	// 56
-		char __pad0[4];	// 60
+		unsigned char reflectionProbeIndex; // 60
+		unsigned char primaryLightIndex; // 61
+		unsigned char lightingHandle; // 62
+		unsigned char flags; // 63
 		/*
 		unsigned __int16 smodelCacheIndex[4]; // 60
 		unsigned char reflectionProbeIndex; // 62
@@ -1212,7 +1228,8 @@ namespace game::qos
 	struct GfxStaticModelInst
 	{
 		Bounds bounds; // 0
-		char __pad[8]; // 24
+		GfxColor groundLighting; // 24
+		int pad; // 28
 	}; static_assert(sizeof(GfxStaticModelInst) == 32);
 
 #pragma pack(push, 4)
@@ -1557,5 +1574,10 @@ namespace game::qos
 		VAR_COUNT = 0x1A,
 		VAR_FREE = 0x1A,
 		VAR_ENDON_LIST = 0x1B,
+	};
+
+	enum StaticModelFlag : char
+	{
+		STATIC_MODEL_FLAG_NO_SHADOW = 0x1,
 	};
 }
