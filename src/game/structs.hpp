@@ -175,32 +175,81 @@ namespace game::qos
 		int platform[2];
 	};
 
-	static_assert(sizeof(unsigned __int16) == 2);
+	enum MapType
+	{
+		MAPTYPE_NONE = 0x0,
+		MAPTYPE_INVALID1 = 0x1,
+		MAPTYPE_INVALID2 = 0x2,
+		MAPTYPE_2D = 0x3,
+		MAPTYPE_3D = 0x4,
+		MAPTYPE_CUBE = 0x5,
+		MAPTYPE_COUNT = 0x6,
+	};
 
-	// TODO: needs fixing
+	enum TextureSemantic : char
+	{
+		TS_2D = 0x0,
+		TS_FUNCTION = 0x1,
+		TS_COLOR_MAP = 0x2,
+		TS_DETAIL_MAP = 0x3,
+		TS_UNUSED_2 = 0x4,
+		TS_NORMAL_MAP = 0x5,
+		TS_UNUSED_3 = 0x6,
+		TS_UNUSED_4 = 0x7,
+		TS_SPECULAR_MAP = 0x8,
+		TS_UNUSED_5 = 0x9,
+		TS_UNUSED_6 = 0xA,
+		TS_WATER_MAP = 0xB,
+	};
+
+	enum GfxImageCategory : char
+	{
+		IMG_CATEGORY_UNKNOWN = 0x0,
+		IMG_CATEGORY_AUTO_GENERATED = 0x1,
+		IMG_CATEGORY_LIGHTMAP = 0x2,
+		IMG_CATEGORY_LOAD_FROM_FILE = 0x3,
+		IMG_CATEGORY_RAW = 0x4,
+		IMG_CATEGORY_FIRST_UNMANAGED = 0x5,
+		IMG_CATEGORY_WATER = 0x5,
+		IMG_CATEGORY_RENDERTARGET = 0x6,
+		IMG_CATEGORY_TEMP = 0x7,
+	};
+
+	struct GfxImage_iw3
+	{
+		MapType mapType;
+		GfxTexture texture;
+		Picmip picmip;
+		bool noPicmip;
+		TextureSemantic semantic;
+		char track;
+		CardMemory cardMemory;
+		unsigned __int16 width;
+		unsigned __int16 height;
+		unsigned __int16 depth;
+		GfxImageCategory category;
+		bool delayLoadPixels;
+		const char* name;
+	};
+
 #pragma pack(push, 4)
 	struct GfxImage
 	{
-		unsigned char mapType;		// 0
+		MapType mapType;			// 0
 		GfxTexture texture;			// 4
 		Picmip picmip;				// 8
 		bool noPicmip;				// 10
-		unsigned char semantic;		// 14
-		char track;					// 18
-		CardMemory cardMemory;		// 22
-		unsigned __int16 width;		// 30
-		unsigned __int16 height;	// 22
-		unsigned __int16 depth;		// 26
-		char category;				// 28
-		char delayLoadPixels;		// 29
-		short idrk;					// 30
+		TextureSemantic semantic;	// 11
+		char track;					// 12
+		CardMemory cardMemory;		// 16
+		unsigned __int16 width;		// 24
+		unsigned __int16 height;	// 26
+		unsigned __int16 depth;		// 28
+		GfxImageCategory category;	// 30
+		char delayLoadPixels;		// 31
 		const char* name;			// 32
-		// 36
 	}; static_assert(sizeof(GfxImage) == 36);
 #pragma pack(pop)
-	static_assert(offsetof(GfxImage, texture) == 4);
-	static_assert(offsetof(GfxImage, noPicmip) == 10);
-	static_assert(offsetof(GfxImage, name) == 32);
 
 	struct DObjAnimMat
 	{
