@@ -39,10 +39,10 @@ namespace mapents
 			iw4_asset->numEntityChars = entString.size() + 1;
 			iw4_asset->stages = nullptr;
 
-			for (const std::string& model : models)
+			/*for (const std::string& model : models)
 			{
 				command::execute(utils::string::va("dumpxmodel %s", model.data()));
-			}
+			}*/
 
 			return { iw4_asset };
 		}
